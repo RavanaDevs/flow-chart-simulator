@@ -45,14 +45,22 @@ export const EditorShell: React.FC = () => {
   const status = useRunStore((s) => s.state.status);
   const { nodes, edges } = useGraphStore();
 
-  useEffect(() => {
+  // Reveal the terminal when execution starts, adjusting during render rather
+  // than in an effect so the tab never paints on the wrong panel first.
+  const [prevStatus, setPrevStatus] = useState(status);
+  if (prevStatus !== status) {
+    setPrevStatus(status);
     if (status === "running" || status === "awaiting-input") {
       setActiveTab("terminal");
     }
+  }
+
+  useEffect(() => {
     if (status === "awaiting-input") {
-      toast.info("Execution paused at Input block. Type your value in the Terminal prompt to resume.", {
-        id: "awaiting-input-toast",
-      });
+      toast.info(
+        "Execution paused at Input block. Type your value in the Terminal prompt to resume.",
+        { id: "awaiting-input-toast" }
+      );
     }
   }, [status]);
 

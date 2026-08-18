@@ -2,8 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRunStore } from "@/stores/run-store";
-import { ChevronRight, Send } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
+/**
+ * Reads a value inline, in the flow of the log, so the terminal keeps reading
+ * as a console transcript. No border, no background, no submit button — the
+ * caret is the only thing marking it as live.
+ */
 export const TerminalPrompt: React.FC = () => {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,10 +36,10 @@ export const TerminalPrompt: React.FC = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="my-1.5 flex items-center gap-2 rounded-md border border-primary bg-accent/40 p-2 shadow-xs"
+      className="flex items-center gap-1.5 py-0.5 font-mono text-xs"
     >
-      <ChevronRight className="h-4 w-4 shrink-0 text-primary animate-pulse" />
-      <span className="font-mono text-xs font-semibold text-foreground">
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 animate-pulse text-primary" />
+      <span className="font-semibold text-foreground">
         {state.pendingInput.varName} &gt;
       </span>
       <input
@@ -43,16 +48,11 @@ export const TerminalPrompt: React.FC = () => {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         inputMode={state.pendingInput.type === "number" ? "decimal" : "text"}
-        placeholder={`Enter ${state.pendingInput.type} value...`}
-        className="flex-1 bg-transparent font-mono text-xs font-semibold text-foreground outline-none placeholder:text-muted-foreground"
+        spellCheck={false}
+        autoComplete="off"
+        className="flex-1 border-none bg-transparent p-0 font-mono text-xs font-semibold text-foreground caret-primary outline-none placeholder:font-normal placeholder:text-muted-foreground/60"
+        placeholder={`type a ${state.pendingInput.type} and press Enter`}
       />
-      <button
-        type="submit"
-        className="flex h-6 w-6 items-center justify-center rounded bg-primary text-primary-foreground hover:opacity-90"
-        title="Submit input (Enter)"
-      >
-        <Send className="h-3 w-3" />
-      </button>
     </form>
   );
 };

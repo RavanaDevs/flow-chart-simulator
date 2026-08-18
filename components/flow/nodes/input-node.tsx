@@ -38,7 +38,7 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
             onChange={(e) =>
               updateNodeData(id, { valueType: e.target.value as InputValueType })
             }
-            className="nodrag nowheel rounded border border-border bg-background px-1 py-0.5 text-[10px] normal-case"
+            className="nodrag nowheel cursor-pointer rounded bg-transparent px-1 py-0.5 text-[10px] normal-case text-muted-foreground outline-none transition-colors hover:bg-foreground/5 hover:text-foreground focus:text-foreground"
           >
             <option value="number">number</option>
             <option value="text">text</option>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -8,43 +8,137 @@ import {
   Connection,
   Edge,
   Node,
+  NodeChange,
+  EdgeChange,
+  applyNodeChanges,
+  applyEdgeChanges,
   useReactFlow,
   ConnectionMode,
   OnSelectionChangeParams,
 } from "@xyflow/react";
 import { nodeTypes, edgeTypes } from "./node-types";
 import { useGraphStore } from "@/stores/graph-store";
-import { NodeKind } from "@/lib/graph/types";
+import { NodeKind, FlowNode, FlowEdge } from "@/lib/graph/types";
 import { toast } from "sonner";
 
+/**
+ * Reuse the existing canvas node whenever nothing semantic changed, so a
+ * document update never resets a node's measured size or selection — and
+ * never hands React Flow a stale position mid-drag.
+ */
+function mergeNodes(prev: Node[], nodes: FlowNode[]): Node[] {
+  const prevById = new Map(prev.map((n) => [n.id, n]));
+
+  return nodes.map((n) => {
+    const existing = prevById.get(n.id);
+    if (
+      existing &&
+      existing.type === n.kind &&
+      existing.data === n.data &&
+      existing.position.x === n.position.x &&
+      existing.position.y === n.position.y
+    ) {
+      return existing;
+    }
+    return {
+      ...existing,
+      id: n.id,
+      type: n.kind,
+      position: n.position,
+      data: n.data as Record<string, unknown>,
+      selected: existing?.selected ?? false,
+    } satisfies Node;
+  });
+}
+
+function mergeEdges(prev: Edge[], edges: FlowEdge[]): Edge[] {
+  const prevById = new Map(prev.map((e) => [e.id, e]));
+
+  return edges.map((e) => {
+    const existing = prevById.get(e.id);
+    if (
+      existing &&
+      existing.source === e.source &&
+      existing.target === e.target &&
+      existing.sourceHandle === e.sourceHandle
+    ) {
+      return existing;
+    }
+    return {
+      ...existing,
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle,
+      type: "smoothstep",
+    } satisfies Edge;
+  });
+}
+
+/**
+ * React Flow owns transient interaction state (drag position, selection,
+ * measured size) in local state. The graph store is the document: it only
+ * receives committed changes — a finished drag, a deletion, a new edge.
+ */
 export const FlowCanvas: React.FC = () => {
-  const { nodes, edges, selectedId, connect, moveNode, setSelectedId } = useGraphStore();
+  const nodes = useGraphStore((s) => s.nodes);
+  const edges = useGraphStore((s) => s.edges);
+  const connect = useGraphStore((s) => s.connect);
+  const moveNode = useGraphStore((s) => s.moveNode);
+  const removeNode = useGraphStore((s) => s.removeNode);
+  const removeEdge = useGraphStore((s) => s.removeEdge);
+  const setSelectedId = useGraphStore((s) => s.setSelectedId);
+
   const screenToFlowPosition = useReactFlow().screenToFlowPosition;
 
-  // Convert graph-store FlowNode[] to ReactFlow Node[]
-  const rfNodes: Node[] = useMemo(
-    () =>
-      nodes.map((n) => ({
-        id: n.id,
-        type: n.kind,
-        position: n.position,
-        selected: n.id === selectedId,
-        data: n.data as Record<string, unknown>,
-      })),
-    [nodes, selectedId]
+  const [rfNodes, setRfNodes] = useState<Node[]>([]);
+  const [rfEdges, setRfEdges] = useState<Edge[]>([]);
+
+  // Sync document -> canvas during render (React's "adjust state when a prop
+  // changes" pattern) rather than in an effect, so the canvas never paints a
+  // frame with stale node positions.
+  const [syncedNodes, setSyncedNodes] = useState(nodes);
+  if (syncedNodes !== nodes) {
+    setSyncedNodes(nodes);
+    setRfNodes(mergeNodes(rfNodes, nodes));
+  }
+
+  const [syncedEdges, setSyncedEdges] = useState(edges);
+  if (syncedEdges !== edges) {
+    setSyncedEdges(edges);
+    setRfEdges(mergeEdges(rfEdges, edges));
+  }
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      setRfNodes((nds) => applyNodeChanges(changes, nds));
+      for (const change of changes) {
+        if (change.type === "remove") {
+          removeNode(change.id);
+        }
+      }
+    },
+    [removeNode]
   );
 
-  // Convert graph-store FlowEdge[] to ReactFlow Edge[]
-  const rfEdges: Edge[] = useMemo(
-    () =>
-      edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        sourceHandle: e.sourceHandle,
-        type: "smoothstep",
-      })),
-    [edges]
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      setRfEdges((eds) => applyEdgeChanges(changes, eds));
+      for (const change of changes) {
+        if (change.type === "remove") {
+          removeEdge(change.id);
+        }
+      }
+    },
+    [removeEdge]
+  );
+
+  // Commit the position once, when the drag finishes.
+  const onNodeDragStop = useCallback(
+    (_: React.MouseEvent | MouseEvent | TouchEvent, node: Node) => {
+      moveNode(node.id, node.position);
+    },
+    [moveNode]
   );
 
   // Strict Connection Validation
@@ -61,7 +155,9 @@ export const FlowCanvas: React.FC = () => {
       );
 
       if (existing) {
-        toast.error("That block already has an arrow coming out of it. Delete the old arrow first.");
+        toast.error(
+          "That block already has an arrow coming out of it. Delete the old arrow first."
+        );
         return false;
       }
 
@@ -80,13 +176,6 @@ export const FlowCanvas: React.FC = () => {
       );
     },
     [connect]
-  );
-
-  const onNodeDragStop = useCallback(
-    (_: React.MouseEvent | MouseEvent | TouchEvent, node: Node) => {
-      moveNode(node.id, node.position);
-    },
-    [moveNode]
   );
 
   const onSelectionChange = useCallback(
@@ -109,7 +198,9 @@ export const FlowCanvas: React.FC = () => {
     (event: React.DragEvent) => {
       event.preventDefault();
 
-      const kind = event.dataTransfer.getData("application/reactflow-kind") as NodeKind;
+      const kind = event.dataTransfer.getData(
+        "application/reactflow-kind"
+      ) as NodeKind;
       if (!kind) return;
 
       const position = screenToFlowPosition({
@@ -135,6 +226,8 @@ export const FlowCanvas: React.FC = () => {
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Strict}
         isValidConnection={isValidConnection}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeDragStop={onNodeDragStop}
         onSelectionChange={onSelectionChange}
