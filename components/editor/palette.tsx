@@ -1,0 +1,110 @@
+import React from "react";
+import { NodeKind } from "@/lib/graph/types";
+import { useGraphStore } from "@/stores/graph-store";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork } from "lucide-react";
+
+type PaletteItem = {
+  kind: NodeKind;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+};
+
+const ITEMS: PaletteItem[] = [
+  {
+    kind: "start",
+    label: "Start",
+    description: "Begins the flowchart",
+    icon: <Play className="h-4 w-4 text-emerald-500" />,
+  },
+  {
+    kind: "process",
+    label: "Process",
+    description: "Calculates or sets a variable (x = 1)",
+    icon: <Cpu className="h-4 w-4 text-blue-500" />,
+  },
+  {
+    kind: "input",
+    label: "Input",
+    description: "Asks user for input value",
+    icon: <ArrowDownToLine className="h-4 w-4 text-purple-500" />,
+  },
+  {
+    kind: "output",
+    label: "Output",
+    description: "Displays a message or answer",
+    icon: <ArrowUpFromLine className="h-4 w-4 text-cyan-500" />,
+  },
+  {
+    kind: "if",
+    label: "Decision (If)",
+    description: "Branches on true/false condition",
+    icon: <GitFork className="h-4 w-4 text-amber-500" />,
+  },
+  {
+    kind: "stop",
+    label: "Stop",
+    description: "Ends execution",
+    icon: <Square className="h-4 w-4 text-red-500" />,
+  },
+];
+
+export const Palette: React.FC = () => {
+  const { nodes, addNode, selectedId } = useGraphStore();
+  const hasStart = nodes.some((n) => n.kind === "start");
+
+  const handleDragStart = (e: React.DragEvent, kind: NodeKind) => {
+    e.dataTransfer.setData("application/reactflow-kind", kind);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleClickAdd = (kind: NodeKind) => {
+    // Find position near selected node or default offset
+    const selectedNode = nodes.find((n) => n.id === selectedId);
+    const basePos = selectedNode ? selectedNode.position : { x: 250, y: 150 };
+    const newPos = { x: basePos.x + 20, y: basePos.y + 80 };
+    addNode(kind, newPos);
+  };
+
+  return (
+    <Card className="h-full rounded-none border-y-0 border-l-0 shadow-none">
+      <CardHeader className="p-3 border-b">
+        <CardTitle className="text-xs uppercase font-bold text-muted-foreground flex items-center justify-between">
+          <span>Blocks Palette</span>
+          <Badge variant="outline" className="text-[10px]">Drag or Click</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 space-y-2 overflow-y-auto">
+        {ITEMS.map((item) => {
+          if (item.kind === "start" && hasStart) {
+            return null; // Hide start block from palette if canvas already has one
+          }
+
+          return (
+            <div
+              key={item.kind}
+              draggable
+              onDragStart={(e) => handleDragStart(e, item.kind)}
+              onClick={() => handleClickAdd(item.kind)}
+              className="group flex cursor-grab items-center gap-3 rounded-lg border border-border bg-card p-2.5 shadow-sm transition-all hover:border-primary hover:bg-accent hover:shadow"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background border border-border group-hover:border-primary">
+                {item.icon}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-foreground">
+                  {item.label}
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  {item.description}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+};

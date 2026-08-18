@@ -1,0 +1,145 @@
+import { describe, it, expect } from "vitest";
+import { compile } from "../graph/compile";
+import { Program } from "../graph/program";
+import { initialState } from "./state";
+import { step } from "./step";
+import { provideInput } from "./input";
+import { FIXTURES } from "../testing/programs";
+
+function runToCompletion(program: Program, inputs: string[] = []) {
+  let state = initialState();
+  let inputIdx = 0;
+
+  while (state.status !== "finished" && state.status !== "error") {
+    if (state.status === "awaiting-input") {
+      if (inputIdx >= inputs.length) {
+        break;
+      }
+      const raw = inputs[inputIdx++];
+      state = provideInput(program, state, raw);
+    } else {
+      state = step(program, state);
+    }
+  }
+
+  return state;
+}
+
+describe("Interpreter & Step Engine", () => {
+  it("runs 'hello' fixture to completion", () => {
+    const cRes = compile(FIXTURES.hello);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("finished");
+    expect(endState.terminal).toHaveLength(2); // output line + system finished line
+    expect(endState.terminal[0]).toEqual({ kind: "output", text: "Hello" });
+  });
+
+  it("runs 'sum1To10' fixture to completion (sum = 55)", () => {
+    const cRes = compile(FIXTURES.sum1To10);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("finished");
+    expect(endState.variables.sum).toBe(55);
+    expect(endState.variables.i).toBe(11);
+    expect(endState.terminal.some((t) => t.kind === "output" && t.text === "55")).toBe(true);
+  });
+
+  it("runs 'countdown' fixture with input 3", () => {
+    const cRes = compile(FIXTURES.countdown);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["3"]);
+    expect(endState.status).toBe("finished");
+    const outputs = endState.terminal.filter((t) => t.kind === "output").map((t) => (t as { text: string }).text);
+    expect(outputs).toEqual(["3", "2", "1"]);
+  });
+
+  it("re-prompts on invalid numeric input without leaving awaiting-input", () => {
+    const cRes = compile(FIXTURES.countdown);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    state = step(cRes.program, state); // idle -> running at start node 1
+    state = step(cRes.program, state); // start node 1 -> input node 2
+    state = step(cRes.program, state); // input node 2 -> awaiting-input
+
+    expect(state.status).toBe("awaiting-input");
+
+    // Provide invalid string "abc"
+    state = provideInput(cRes.program, state, "abc");
+    expect(state.status).toBe("awaiting-input");
+    expect(state.terminal.some((t) => t.kind === "error" && t.error.code === "INPUT_NOT_A_NUMBER")).toBe(true);
+
+    // Provide valid "2"
+    state = provideInput(cRes.program, state, "2");
+    expect(state.status).toBe("running");
+  });
+
+  it("raises DIVIDE_BY_ZERO on division by zero input", () => {
+    const cRes = compile(FIXTURES.divideByZero);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["0"]);
+    expect(endState.status).toBe("error");
+    expect(endState.error?.code).toBe("DIVIDE_BY_ZERO");
+  });
+
+  it("trips STEP_BUDGET_EXCEEDED on infinite loop and detects cycle", () => {
+    const cRes = compile(FIXTURES.infiniteLoop);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("error");
+    expect(endState.error?.code).toBe("STEP_BUDGET_EXCEEDED");
+    if (endState.error?.code === "STEP_BUDGET_EXCEEDED") {
+      expect(endState.error.params.cycle.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("Property: Determinism", () => {
+    const cRes = compile(FIXTURES.sum1To10);
+    if (!cRes.ok) return;
+
+    const runA = runToCompletion(cRes.program);
+    const runB = runToCompletion(cRes.program);
+
+    expect(runA).toEqual(runB);
+  });
+
+  it("Property: Absorbing terminal states", () => {
+    const cRes = compile(FIXTURES.hello);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("finished");
+
+    const steppedAgain = step(cRes.program, endState);
+    expect(steppedAgain).toBe(endState); // Exact reference equality
+  });
+
+  it("Property: awaiting-input is a hard stop", () => {
+    const cRes = compile(FIXTURES.countdown);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    state = step(cRes.program, state);
+    state = step(cRes.program, state);
+    state = step(cRes.program, state);
+    expect(state.status).toBe("awaiting-input");
+
+    const before = state;
+    for (let i = 0; i < 100; i++) {
+      state = step(cRes.program, state);
+    }
+    expect(state).toBe(before); // Step does nothing while awaiting input
+  });
+});

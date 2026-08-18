@@ -1,0 +1,94 @@
+{
+  "LEX_UNKNOWN_CHARACTER": {
+    "message": "Unknown character '{char}'.",
+    "hint": "Check for typos or unexpected symbols in your block."
+  },
+  "LEX_UNTERMINATED_STRING": {
+    "message": "Unterminated text string.",
+    "hint": "Make sure your text string has a closing double quote (\")."
+  },
+  "PARSE_UNEXPECTED_TOKEN": {
+    "message": "Unexpected text '{found}'.",
+    "hint": "Expected {expected}."
+  },
+  "PARSE_TRAILING_INPUT": {
+    "message": "Extra text at the end of the line: '{extraText}'.",
+    "hint": "Remove the extra text or check your formula."
+  },
+  "PARSE_EXPECTED_IDENTIFIER": {
+    "message": "Expected a variable name, but found '{found}'.",
+    "hint": "Use a valid variable name starting with a letter."
+  },
+  "PARSE_EXPECTED_EQUALS": {
+    "message": "Expected '=' after variable name.",
+    "hint": "Use 'variable = expression' to set a value."
+  },
+  "PROCESS_MISSING_EQUALS": {
+    "message": "A process block must save its answer into a variable.",
+    "hint": "Try adding a variable assignment, e.g. 'x = {src}'."
+  },
+  "PROCESS_ASSIGN_TO_RESERVED": {
+    "message": "Cannot use reserved keyword '{name}' as a variable name.",
+    "hint": "Choose a different variable name like 'my{name}' or 'total'."
+  },
+  "UNKNOWN_VARIABLE": {
+    "message": "Variable '{name}' has not been created yet.",
+    "hint": "Did you mean '{suggestion}'? Make sure you assign it before reading."
+  },
+  "DIVIDE_BY_ZERO": {
+    "message": "Cannot divide by zero.",
+    "hint": "Check that your divisor is not 0 before performing '{op}'."
+  },
+  "TYPE_MISMATCH": {
+    "message": "Cannot use operator '{op}' between {leftType} and {rightType}.",
+    "hint": "Make sure both sides have matching compatible types."
+  },
+  "IF_NOT_BOOLEAN": {
+    "message": "If block condition must give a yes/no answer (true or false), but got {actualType}.",
+    "hint": "Use a comparison operator like '=', '<', or '>' inside your Decision block."
+  },
+  "STEP_BUDGET_EXCEEDED": {
+    "message": "Program stopped after {budget} steps. It might be in an endless loop.",
+    "hint": "Check the loop around blocks: {cycle}."
+  },
+  "INPUT_NOT_A_NUMBER": {
+    "message": "'{text}' is not a valid number.",
+    "hint": "Please type a valid numeric value."
+  },
+  "NO_START": {
+    "message": "Flowchart must have a Start block.",
+    "hint": "Drag a Start block onto the canvas to begin."
+  },
+  "MULTIPLE_START": {
+    "message": "Flowchart has {count} Start blocks.",
+    "hint": "Flowcharts can only have one Start block. Delete extra Start blocks."
+  },
+  "NO_STOP": {
+    "message": "Flowchart has no Stop block.",
+    "hint": "Add a Stop block so your flowchart knows when to end."
+  },
+  "DANGLING_OUTPUT": {
+    "message": "This {nodeKind} block is not connected to anything.",
+    "hint": "Drag an arrow from its bottom handle to the next block."
+  },
+  "UNCONNECTED_BRANCH": {
+    "message": "The '{branch}' path of this Decision block is not connected.",
+    "hint": "Connect an arrow from the '{branch}' handle to another block."
+  },
+  "UNREACHABLE_NODE": {
+    "message": "This {nodeKind} block cannot be reached from Start.",
+    "hint": "Connect an arrow leading into this block or remove it."
+  },
+  "NO_REACHABLE_STOP": {
+    "message": "Flowchart has no path leading to a Stop block.",
+    "hint": "Make sure at least one path reaches a Stop block."
+  },
+  "VARIABLE_MAYBE_UNASSIGNED": {
+    "message": "Variable '{name}' might be used before it is given a value.",
+    "hint": "Ensure '{name}' is set by an Input or Process block on all incoming paths."
+  },
+  "MULTIPLE_OUTGOING_EDGES": {
+    "message": "This block has multiple arrows connected to the same output.",
+    "hint": "A block can only have one outgoing arrow per handle."
+  }
+}
