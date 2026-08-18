@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useRunStore } from "@/stores/run-store";
 import { typeOf, formatValue } from "@/lib/lang/values";

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo } from "react";
 import { useGraphStore } from "@/stores/graph-store";
 import { compile } from "@/lib/graph/compile";

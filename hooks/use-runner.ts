@@ -1,9 +1,12 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
 
 export function useRunner(speedMs: number) {
   const status = useRunStore((s) => s.state.status);
+  const stepCount = useRunStore((s) => s.state.stepCount);
   const tick = useRunStore((s) => s.tick);
   const resetRun = useRunStore((s) => s.resetRun);
   const revision = useGraphStore((s) => s.revision);
@@ -28,5 +31,5 @@ export function useRunner(speedMs: number) {
     }, speedMs);
 
     return () => clearTimeout(timerId);
-  }, [status, speedMs, tick]);
+  }, [status, stepCount, speedMs, tick]);
 }

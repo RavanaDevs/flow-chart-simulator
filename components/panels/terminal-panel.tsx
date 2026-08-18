@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useEffect } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { TerminalLine } from "./terminal-line";

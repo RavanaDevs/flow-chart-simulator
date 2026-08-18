@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { useGraphStore } from "@/stores/graph-store";
 import { exportDocument, importDocument } from "@/lib/persistence/document";
