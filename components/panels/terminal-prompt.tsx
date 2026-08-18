@@ -8,8 +8,12 @@ export const TerminalPrompt: React.FC = () => {
   const { state, submitInput } = useRunStore();
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (state.status === "awaiting-input") {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  }, [state.status, state.pendingInput?.nodeId]);
 
   if (state.status !== "awaiting-input" || !state.pendingInput) {
     return null;

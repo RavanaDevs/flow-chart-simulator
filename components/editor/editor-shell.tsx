@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Toolbar } from "./toolbar";
@@ -19,8 +19,10 @@ import { useRunner } from "@/hooks/use-runner";
 import { useFollowNode } from "@/hooks/use-follow-node";
 import { useAutosave } from "@/hooks/use-autosave";
 import { useGraphStore } from "@/stores/graph-store";
+import { useRunStore } from "@/stores/run-store";
 import { compile } from "@/lib/graph/compile";
 import { Terminal as TerminalIcon, Variable, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 // Client-only dynamic mount for ReactFlow Canvas
 const FlowCanvas = dynamic(
@@ -40,7 +42,19 @@ export const EditorShell: React.FC = () => {
   const [followNode, setFollowNode] = useState(true);
   const [activeTab, setActiveTab] = useState("terminal");
 
+  const status = useRunStore((s) => s.state.status);
   const { nodes, edges } = useGraphStore();
+
+  useEffect(() => {
+    if (status === "running" || status === "awaiting-input") {
+      setActiveTab("terminal");
+    }
+    if (status === "awaiting-input") {
+      toast.info("Execution paused at Input block. Type your value in the Terminal prompt to resume.", {
+        id: "awaiting-input-toast",
+      });
+    }
+  }, [status]);
 
   useRunner(speedMs);
   useAutosave();
