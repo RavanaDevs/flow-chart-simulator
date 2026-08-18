@@ -10,50 +10,54 @@ export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
   switch (kind) {
     case "start":
     case "stop": {
-      // Stadium / Pill shape (140x50, rx=25)
+      // Stadium / Pill shape (140x50, rx=23, p=2)
       const w = 140;
       const h = 50;
-      const r = 25;
+      const p = 2;
+      const r = 23;
       return {
         width: w,
         height: h,
-        pathD: `M ${r} 0 L ${w - r} 0 A ${r} ${r} 0 0 1 ${w} ${h / 2} A ${r} ${r} 0 0 1 ${w - r} ${h} L ${r} ${h} A ${r} ${r} 0 0 1 0 ${h / 2} A ${r} ${r} 0 0 1 ${r} 0 Z`,
+        pathD: `M ${r + p} ${p} L ${w - r - p} ${p} A ${r} ${r} 0 0 1 ${w - p} ${h / 2} A ${r} ${r} 0 0 1 ${w - r - p} ${h - p} L ${r + p} ${h - p} A ${r} ${r} 0 0 1 ${p} ${h / 2} A ${r} ${r} 0 0 1 ${r + p} ${p} Z`,
       };
     }
 
     case "input":
     case "output": {
-      // Parallelogram with 14px horizontal skew (180x60)
+      // Parallelogram with horizontal skew (180x60, p=2)
       const w = 180;
       const h = 60;
-      const skew = 16;
+      const p = 2;
+      const skew = 18;
       return {
         width: w,
         height: h,
-        pathD: `M ${skew} 0 L ${w} 0 L ${w - skew} ${h} L 0 ${h} Z`,
+        pathD: `M ${skew + p} ${p} L ${w - p} ${p} L ${w - skew - p} ${h - p} L ${p} ${h - p} Z`,
       };
     }
 
     case "process": {
-      // Rounded Rectangle (180x60, rx=8)
+      // Rounded Rectangle (180x60, rx=8, p=2)
       const w = 180;
       const h = 60;
+      const p = 2;
       const r = 8;
       return {
         width: w,
         height: h,
-        pathD: `M ${r} 0 L ${w - r} 0 A ${r} ${r} 0 0 1 ${w} ${r} L ${w} ${h - r} A ${r} ${r} 0 0 1 ${w - r} ${h} L ${r} ${h} A ${r} ${r} 0 0 1 0 ${h - r} L 0 ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`,
+        pathD: `M ${r + p} ${p} L ${w - r - p} ${p} A ${r} ${r} 0 0 1 ${w - p} ${r + p} L ${w - p} ${h - r - p} A ${r} ${r} 0 0 1 ${w - r - p} ${h - p} L ${r + p} ${h - p} A ${r} ${r} 0 0 1 ${p} ${h - r - p} L ${p} ${r + p} A ${r} ${r} 0 0 1 ${r + p} ${p} Z`,
       };
     }
 
     case "if": {
-      // Diamond shape (200x110)
+      // Diamond shape (200x110, p=2)
       const w = 200;
       const h = 110;
+      const p = 2;
       return {
         width: w,
         height: h,
-        pathD: `M ${w / 2} 0 L ${w} ${h / 2} L ${w / 2} ${h} L 0 ${h / 2} Z`,
+        pathD: `M ${w / 2} ${p} L ${w - p} ${h / 2} L ${w / 2} ${h - p} L ${p} ${h / 2} Z`,
       };
     }
   }

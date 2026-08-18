@@ -31,7 +31,11 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   selectedId: null,
   revision: 1,
 
-  setSelectedId: (id) => set({ selectedId: id }),
+  setSelectedId: (id) => {
+    if (get().selectedId !== id) {
+      set({ selectedId: id });
+    }
+  },
 
   addNode: (kind, position, initialData = {}) => {
     const newId = `node-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;

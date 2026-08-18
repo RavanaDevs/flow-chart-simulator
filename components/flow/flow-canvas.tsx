@@ -10,6 +10,7 @@ import {
   Node,
   useReactFlow,
   ConnectionMode,
+  OnSelectionChangeParams,
 } from "@xyflow/react";
 import { nodeTypes, edgeTypes } from "./node-types";
 import { useGraphStore } from "@/stores/graph-store";
@@ -17,7 +18,7 @@ import { NodeKind } from "@/lib/graph/types";
 import { toast } from "sonner";
 
 export const FlowCanvas: React.FC = () => {
-  const { nodes, edges, connect, moveNode, setSelectedId } = useGraphStore();
+  const { nodes, edges, selectedId, connect, moveNode, setSelectedId } = useGraphStore();
   const screenToFlowPosition = useReactFlow().screenToFlowPosition;
 
   // Convert graph-store FlowNode[] to ReactFlow Node[]
@@ -27,9 +28,10 @@ export const FlowCanvas: React.FC = () => {
         id: n.id,
         type: n.kind,
         position: n.position,
+        selected: n.id === selectedId,
         data: n.data as Record<string, unknown>,
       })),
-    [nodes]
+    [nodes, selectedId]
   );
 
   // Convert graph-store FlowEdge[] to ReactFlow Edge[]
@@ -87,6 +89,16 @@ export const FlowCanvas: React.FC = () => {
     [moveNode]
   );
 
+  const onSelectionChange = useCallback(
+    (params: OnSelectionChangeParams) => {
+      const firstSelected = params.nodes[0]?.id ?? null;
+      if (useGraphStore.getState().selectedId !== firstSelected) {
+        setSelectedId(firstSelected);
+      }
+    },
+    [setSelectedId]
+  );
+
   // Drag and drop block from Palette
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -125,10 +137,7 @@ export const FlowCanvas: React.FC = () => {
         isValidConnection={isValidConnection}
         onConnect={onConnect}
         onNodeDragStop={onNodeDragStop}
-        onSelectionChange={(params) => {
-          const firstSelected = params.nodes[0]?.id ?? null;
-          setSelectedId(firstSelected);
-        }}
+        onSelectionChange={onSelectionChange}
         fitView
       >
         <Background gap={16} size={1} />

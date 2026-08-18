@@ -141,3 +141,21 @@
 .animate-marching-ants {
   animation: marching-ants 1s linear infinite;
 }
+
+/* Strip default ReactFlow node white background box and border */
+.react-flow__node,
+.react-flow__node-input,
+.react-flow__node-output,
+.react-flow__node-default,
+.react-flow__node-start,
+.react-flow__node-stop,
+.react-flow__node-process,
+.react-flow__node-if {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+  width: auto !important;
+}
