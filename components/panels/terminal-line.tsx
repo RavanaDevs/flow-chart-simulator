@@ -1,6 +1,7 @@
 import React from "react";
 import { TerminalLine as TLine } from "@/lib/run/state";
-import { resolveMessage } from "@/lib/i18n/resolve";
+import { useT } from "@/hooks/use-t";
+import { UiKey } from "@/lib/i18n/ui-keys";
 import { AlertCircle, ChevronRight, Info } from "lucide-react";
 
 type TerminalLineProps = {
@@ -8,6 +9,8 @@ type TerminalLineProps = {
 };
 
 export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
+  const { t, resolveMessage } = useT();
+
   switch (line.kind) {
     case "output":
       return (
@@ -20,7 +23,12 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
       return (
         <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
           <ChevronRight className="h-3.5 w-3.5 text-primary" />
-          <span>Please enter value for <strong className="text-foreground">{line.varName}</strong> ({line.valueType}):</span>
+          <span>
+            {t("panel.terminal.promptFor", {
+              varName: line.varName,
+              valueType: line.valueType,
+            })}
+          </span>
         </div>
       );
 
@@ -53,10 +61,7 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
         <div className="flex items-center gap-1.5 py-0.5 font-mono text-xs italic text-muted-foreground">
           <Info className="h-3 w-3" />
           <span>
-            {line.code === "PROGRAM_FINISHED" && "Program finished execution."}
-            {line.code === "PROGRAM_RESET" && "Program state reset."}
-            {line.code === "EDIT_DURING_RUN" && "Flowchart edited — reset program execution."}
-            {line.code === "OUTPUT_TRUNCATED" && "[Output log truncated to 2000 lines]"}
+            {t(`panel.terminal.sys.${line.code}` as UiKey)}
           </span>
         </div>
       );

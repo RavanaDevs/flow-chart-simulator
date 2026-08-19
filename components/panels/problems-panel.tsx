@@ -3,12 +3,13 @@
 import React, { useMemo } from "react";
 import { useGraphStore } from "@/stores/graph-store";
 import { compile } from "@/lib/graph/compile";
-import { resolveMessage } from "@/lib/i18n/resolve";
+import { useT } from "@/hooks/use-t";
 import { AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useReactFlow } from "@xyflow/react";
 
 export const ProblemsPanel: React.FC = () => {
+  const { t, resolveMessage } = useT();
   const { nodes, edges, setSelectedId } = useGraphStore();
   const { setCenter, getZoom } = useReactFlow();
 
@@ -36,8 +37,8 @@ export const ProblemsPanel: React.FC = () => {
       {diagnostics.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
           <CheckCircle2 className="h-8 w-8 mb-2 text-emerald-500 opacity-80" />
-          <p className="text-xs font-semibold text-foreground">No problems found</p>
-          <p className="text-[11px] opacity-70">Your flowchart graph structure and code pass all checks</p>
+          <p className="text-xs font-semibold text-foreground">{t("panel.problems.empty")}</p>
+          <p className="text-[11px] opacity-70">{t("panel.problems.emptyDesc")}</p>
         </div>
       ) : (
         diagnostics.map((diag, idx) => {

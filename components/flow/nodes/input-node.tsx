@@ -5,9 +5,11 @@ import { ExpressionField } from "./expression-field";
 import { countLines } from "../shapes/geometry";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
+import { useT } from "@/hooks/use-t";
 import { InputValueType } from "@/lib/graph/types";
 
 export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
+  const { t } = useT();
   const currentNodeId = useRunStore((s) => s.state.currentNodeId);
   const status = useRunStore((s) => s.state.status);
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
@@ -22,12 +24,12 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
     <NodeFrame id={id} kind="input" isSelected={selected} lines={countLines(names)}>
       {isAwaiting && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-lg animate-bounce whitespace-nowrap">
-          <span>Type in Terminal</span> ↵
+          <span>{t("block.typeInTerminal")}</span> ↵
         </div>
       )}
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-muted-foreground">
-          <span>Input</span>
+          <span>{t("block.input")}</span>
           <select
             value={valueType}
             onChange={(e) =>
@@ -42,7 +44,7 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
         <ExpressionField
           value={names}
           onChange={(val) => updateNodeData(id, { names: val })}
-          placeholder="name, name"
+          placeholder={t("block.inputPlaceholder")}
           multiline
         />
       </div>

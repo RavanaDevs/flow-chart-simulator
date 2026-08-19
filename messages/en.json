@@ -1,118 +1,243 @@
 {
-  "LEX_UNKNOWN_CHARACTER": {
-    "message": "Unknown character '{char}'.",
-    "hint": "Check for typos or unexpected symbols in your block."
+  "errors": {
+    "LEX_UNKNOWN_CHARACTER": {
+      "message": "Unknown character '{char}'.",
+      "hint": "Check for typos or unexpected symbols in your block."
+    },
+    "LEX_UNTERMINATED_STRING": {
+      "message": "Unterminated text string.",
+      "hint": "Make sure your text string has a closing double quote (\")."
+    },
+    "PARSE_UNEXPECTED_TOKEN": {
+      "message": "Unexpected text '{found}'.",
+      "hint": "Expected {expected}."
+    },
+    "PARSE_TRAILING_INPUT": {
+      "message": "Extra text at the end of the line: '{extraText}'.",
+      "hint": "Remove the extra text or check your formula."
+    },
+    "PARSE_EXPECTED_IDENTIFIER": {
+      "message": "Expected a variable name, but found '{found}'.",
+      "hint": "Use a valid variable name starting with a letter."
+    },
+    "PARSE_EXPECTED_EQUALS": {
+      "message": "Expected '=' after variable name.",
+      "hint": "Use 'variable = expression' to set a value."
+    },
+    "PROCESS_MISSING_EQUALS": {
+      "message": "A process block must save its answer into a variable.",
+      "hint": "Try adding a variable assignment, e.g. 'x = {src}'."
+    },
+    "PROCESS_ASSIGN_TO_RESERVED": {
+      "message": "Cannot use reserved keyword '{name}' as a variable name.",
+      "hint": "Choose a different variable name like 'my{name}' or 'total'."
+    },
+    "UNKNOWN_VARIABLE": {
+      "message": "Variable '{name}' has not been created yet.",
+      "hint": "Make sure you assign a value to '{name}' before reading it."
+    },
+    "UNKNOWN_VARIABLE_DID_YOU_MEAN": {
+      "message": "Variable '{name}' has not been created yet.",
+      "hint": "Did you mean '{suggestion}'? Make sure you assign it before reading."
+    },
+    "DIVIDE_BY_ZERO": {
+      "message": "Cannot divide by zero.",
+      "hint": "Check that your divisor is not 0 before performing '{op}'."
+    },
+    "TYPE_MISMATCH": {
+      "message": "Cannot use operator '{op}' between {leftType} and {rightType}.",
+      "hint": "Make sure both sides have matching compatible types."
+    },
+    "IF_NOT_BOOLEAN": {
+      "message": "If block condition must give a yes/no answer (true or false), but got {actualType}.",
+      "hint": "Use a comparison operator like '=', '<', or '>' inside your Decision block."
+    },
+    "STEP_BUDGET_EXCEEDED": {
+      "message": "Program stopped after {budget} steps. It might be in an endless loop.",
+      "hint": "Check the loop around blocks: {cycle}."
+    },
+    "INPUT_NOT_A_NUMBER": {
+      "message": "'{text}' is not a valid number.",
+      "hint": "Please type a valid numeric value."
+    },
+    "NO_START": {
+      "message": "Flowchart must have a Start block.",
+      "hint": "Drag a Start block onto the canvas to begin."
+    },
+    "MULTIPLE_START": {
+      "message": "Your flowchart has more than one Start block.",
+      "hint": "Flowcharts can only have one Start block. Delete extra Start blocks."
+    },
+    "NO_STOP": {
+      "message": "Flowchart has no Stop block.",
+      "hint": "Add a Stop block so your flowchart knows when to end."
+    },
+    "DANGLING_OUTPUT": {
+      "message": "This {nodeKind} block is not connected to anything.",
+      "hint": "Drag an arrow from its bottom handle to the next block."
+    },
+    "UNCONNECTED_BRANCH": {
+      "message": "The '{branch}' path of this Decision block is not connected.",
+      "hint": "Connect an arrow from the '{branch}' handle to another block."
+    },
+    "UNREACHABLE_NODE": {
+      "message": "This {nodeKind} block cannot be reached from Start.",
+      "hint": "Connect an arrow leading into this block or remove it."
+    },
+    "NO_REACHABLE_STOP": {
+      "message": "Flowchart has no path leading to a Stop block.",
+      "hint": "Make sure at least one path reaches a Stop block."
+    },
+    "VARIABLE_MAYBE_UNASSIGNED": {
+      "message": "Variable '{name}' might be used before it is given a value.",
+      "hint": "Ensure '{name}' is set by an Input or Process block on all incoming paths."
+    },
+    "MULTIPLE_OUTGOING_EDGES": {
+      "message": "This block has multiple arrows connected to the same output.",
+      "hint": "A block can only have one outgoing arrow per handle."
+    },
+    "PARSE_TRAILING_COMMA": {
+      "message": "There is a comma with nothing after it.",
+      "hint": "Remove the last comma, or add another value after it."
+    },
+    "PARSE_EMPTY_LIST_ITEM": {
+      "message": "Two commas in a row — something is missing between them.",
+      "hint": "Put a value between the commas, or delete one of them."
+    },
+    "OUTPUT_EMPTY": {
+      "message": "This Output block is empty.",
+      "hint": "Type what you want to show, e.g. \"Your total is: \", total"
+    },
+    "DUPLICATE_INPUT_NAME": {
+      "message": "This Input block asks for '{name}' twice.",
+      "hint": "Each name in an Input block must be different."
+    },
+    "START_HAS_INBOUND": {
+      "message": "An arrow points into the Start block.",
+      "hint": "Start is where your flowchart begins, so nothing can lead into it. Delete that arrow."
+    },
+    "STOP_HAS_OUTGOING": {
+      "message": "An arrow leads out of a Stop block.",
+      "hint": "Stop ends the program, so nothing can come after it. Delete that arrow."
+    },
+    "IMPORT_NOT_AN_OBJECT": {
+      "message": "Root document must be an object.",
+      "hint": "Check that the file contains a valid JSON flowchart structure."
+    },
+    "IMPORT_UNSUPPORTED_VERSION": {
+      "message": "Unsupported document version {version}.",
+      "hint": "This app understands versions 1 to {maxVersion}."
+    },
+    "IMPORT_BAD_NODES_ARRAY": {
+      "message": "Document must contain a 'nodes' array.",
+      "hint": "Ensure the flowchart JSON includes a list of nodes."
+    },
+    "IMPORT_BAD_EDGES_ARRAY": {
+      "message": "Document must contain an 'edges' array.",
+      "hint": "Ensure the flowchart JSON includes a list of edge connections."
+    },
+    "IMPORT_BAD_NODE": {
+      "message": "Node at index {index} is invalid.",
+      "hint": "Check that all node entries are properly formatted objects."
+    },
+    "IMPORT_BAD_NODE_ID": {
+      "message": "Node at index {index} is missing a valid 'id'.",
+      "hint": "Every node in the flowchart must have a unique text ID."
+    },
+    "IMPORT_UNKNOWN_KIND": {
+      "message": "Node '{id}' has unknown kind '{kind}'.",
+      "hint": "Supported block kinds are: start, stop, input, output, process, if, connector."
+    },
+    "IMPORT_BAD_POSITION": {
+      "message": "Node '{id}' is missing a valid position.",
+      "hint": "Nodes must specify numeric x and y coordinates."
+    },
+    "IMPORT_BAD_EDGE": {
+      "message": "Edge at index {index} is invalid.",
+      "hint": "Check that all edge entries are properly formatted objects."
+    },
+    "IMPORT_BAD_EDGE_IDS": {
+      "message": "Edge at index {index} is missing id, source, or target.",
+      "hint": "Edges must specify connected node IDs."
+    },
+    "IMPORT_INVALID_JSON": {
+      "message": "Invalid file format.",
+      "hint": "Ensure the file contains valid JSON: {error}"
+    }
   },
-  "LEX_UNTERMINATED_STRING": {
-    "message": "Unterminated text string.",
-    "hint": "Make sure your text string has a closing double quote (\")."
-  },
-  "PARSE_UNEXPECTED_TOKEN": {
-    "message": "Unexpected text '{found}'.",
-    "hint": "Expected {expected}."
-  },
-  "PARSE_TRAILING_INPUT": {
-    "message": "Extra text at the end of the line: '{extraText}'.",
-    "hint": "Remove the extra text or check your formula."
-  },
-  "PARSE_EXPECTED_IDENTIFIER": {
-    "message": "Expected a variable name, but found '{found}'.",
-    "hint": "Use a valid variable name starting with a letter."
-  },
-  "PARSE_EXPECTED_EQUALS": {
-    "message": "Expected '=' after variable name.",
-    "hint": "Use 'variable = expression' to set a value."
-  },
-  "PROCESS_MISSING_EQUALS": {
-    "message": "A process block must save its answer into a variable.",
-    "hint": "Try adding a variable assignment, e.g. 'x = {src}'."
-  },
-  "PROCESS_ASSIGN_TO_RESERVED": {
-    "message": "Cannot use reserved keyword '{name}' as a variable name.",
-    "hint": "Choose a different variable name like 'my{name}' or 'total'."
-  },
-  "UNKNOWN_VARIABLE": {
-    "message": "Variable '{name}' has not been created yet.",
-    "hint": "Did you mean '{suggestion}'? Make sure you assign it before reading."
-  },
-  "DIVIDE_BY_ZERO": {
-    "message": "Cannot divide by zero.",
-    "hint": "Check that your divisor is not 0 before performing '{op}'."
-  },
-  "TYPE_MISMATCH": {
-    "message": "Cannot use operator '{op}' between {leftType} and {rightType}.",
-    "hint": "Make sure both sides have matching compatible types."
-  },
-  "IF_NOT_BOOLEAN": {
-    "message": "If block condition must give a yes/no answer (true or false), but got {actualType}.",
-    "hint": "Use a comparison operator like '=', '<', or '>' inside your Decision block."
-  },
-  "STEP_BUDGET_EXCEEDED": {
-    "message": "Program stopped after {budget} steps. It might be in an endless loop.",
-    "hint": "Check the loop around blocks: {cycle}."
-  },
-  "INPUT_NOT_A_NUMBER": {
-    "message": "'{text}' is not a valid number.",
-    "hint": "Please type a valid numeric value."
-  },
-  "NO_START": {
-    "message": "Flowchart must have a Start block.",
-    "hint": "Drag a Start block onto the canvas to begin."
-  },
-  "MULTIPLE_START": {
-    "message": "Flowchart has {count} Start blocks.",
-    "hint": "Flowcharts can only have one Start block. Delete extra Start blocks."
-  },
-  "NO_STOP": {
-    "message": "Flowchart has no Stop block.",
-    "hint": "Add a Stop block so your flowchart knows when to end."
-  },
-  "DANGLING_OUTPUT": {
-    "message": "This {nodeKind} block is not connected to anything.",
-    "hint": "Drag an arrow from its bottom handle to the next block."
-  },
-  "UNCONNECTED_BRANCH": {
-    "message": "The '{branch}' path of this Decision block is not connected.",
-    "hint": "Connect an arrow from the '{branch}' handle to another block."
-  },
-  "UNREACHABLE_NODE": {
-    "message": "This {nodeKind} block cannot be reached from Start.",
-    "hint": "Connect an arrow leading into this block or remove it."
-  },
-  "NO_REACHABLE_STOP": {
-    "message": "Flowchart has no path leading to a Stop block.",
-    "hint": "Make sure at least one path reaches a Stop block."
-  },
-  "VARIABLE_MAYBE_UNASSIGNED": {
-    "message": "Variable '{name}' might be used before it is given a value.",
-    "hint": "Ensure '{name}' is set by an Input or Process block on all incoming paths."
-  },
-  "MULTIPLE_OUTGOING_EDGES": {
-    "message": "This block has multiple arrows connected to the same output.",
-    "hint": "A block can only have one outgoing arrow per handle."
-  },
-  "PARSE_TRAILING_COMMA": {
-    "message": "There is a comma with nothing after it.",
-    "hint": "Remove the last comma, or add another value after it."
-  },
-  "PARSE_EMPTY_LIST_ITEM": {
-    "message": "Two commas in a row — something is missing between them.",
-    "hint": "Put a value between the commas, or delete one of them."
-  },
-  "OUTPUT_EMPTY": {
-    "message": "This Output block is empty.",
-    "hint": "Type what you want to show, e.g. \"Your total is: \", total"
-  },
-  "DUPLICATE_INPUT_NAME": {
-    "message": "This Input block asks for '{name}' twice.",
-    "hint": "Each name in an Input block must be different."
-  },
-  "START_HAS_INBOUND": {
-    "message": "An arrow points into the Start block.",
-    "hint": "Start is where your flowchart begins, so nothing can lead into it. Delete that arrow."
-  },
-  "STOP_HAS_OUTGOING": {
-    "message": "An arrow leads out of a Stop block.",
-    "hint": "Stop ends the program, so nothing can come after it. Delete that arrow."
+  "ui": {
+    "toolbar.run": "Run",
+    "toolbar.step": "Step",
+    "toolbar.stepBack": "Step Back",
+    "toolbar.reset": "Reset",
+    "toolbar.speed": "Speed",
+    "toolbar.speedSlow": "0.5x (Slow)",
+    "toolbar.speedNormal": "1x (Normal)",
+    "toolbar.speedFast": "2x (Fast)",
+    "toolbar.speedInstant": "Instant",
+    "toolbar.follow": "Follow Node",
+    "toolbar.new": "New",
+    "toolbar.export": "Export",
+    "toolbar.import": "Import",
+    "toolbar.confirmNewTitle": "Clear canvas?",
+    "toolbar.confirmNewDescription": "This will delete all blocks and reset program execution. Saved flowcharts will be removed.",
+    "toolbar.cancel": "Cancel",
+    "toolbar.confirm": "Clear Canvas",
+    "palette.title": "Blocks Palette",
+    "palette.dragOrClick": "Drag or Click",
+    "palette.alreadyOnCanvas": "Already on the canvas",
+    "palette.startDisabledTitle": "Your flowchart already has a Start block",
+    "palette.block.start": "Start",
+    "palette.block.startDesc": "Begins the flowchart",
+    "palette.block.stop": "Stop",
+    "palette.block.stopDesc": "Ends execution",
+    "palette.block.input": "Input",
+    "palette.block.inputDesc": "Asks user for input value",
+    "palette.block.output": "Output",
+    "palette.block.outputDesc": "Displays a message or answer",
+    "palette.block.process": "Process",
+    "palette.block.processDesc": "Calculates or sets a variable (x = 1)",
+    "palette.block.decision": "Decision (If)",
+    "palette.block.decisionDesc": "Branches on true/false condition",
+    "palette.block.connector": "Connector",
+    "palette.block.connectorDesc": "Joins several paths back into one",
+    "block.start": "Start",
+    "block.stop": "Stop",
+    "block.input": "Input",
+    "block.output": "Output",
+    "block.process": "Process",
+    "block.decision": "Decision (If)",
+    "block.connector": "Connector",
+    "block.typeInTerminal": "Type in Terminal",
+    "block.inputPlaceholder": "name, name",
+    "block.outputPlaceholder": "expression",
+    "block.processPlaceholder": "x = 1",
+    "block.conditionPlaceholder": "condition",
+    "tab.terminal": "Terminal",
+    "tab.variables": "Variables",
+    "tab.problems": "Problems",
+    "panel.terminal.empty": "Terminal log is empty",
+    "panel.terminal.emptyDesc": "Click Run or Step to execute your flowchart",
+    "panel.terminal.clear": "Clear",
+    "panel.terminal.olderTruncated": "Older output was hidden — showing the most recent lines only.",
+    "panel.terminal.promptFor": "Please enter value for {varName} ({valueType}):",
+    "panel.terminal.typeInputPlaceholder": "type a {type} and press Enter",
+    "panel.terminal.sys.PROGRAM_FINISHED": "Program finished execution.",
+    "panel.terminal.sys.PROGRAM_RESET": "Program state reset.",
+    "panel.terminal.sys.EDIT_DURING_RUN": "Flowchart edited — reset program execution.",
+    "panel.terminal.sys.OUTPUT_TRUNCATED": "[Output log truncated to 2000 lines]",
+    "panel.variables.empty": "No variables defined yet",
+    "panel.variables.emptyDesc": "Variables created in Process or Input blocks will appear here",
+    "panel.variables.colName": "Variable",
+    "panel.variables.colType": "Type",
+    "panel.variables.colValue": "Value",
+    "panel.problems.empty": "No problems found",
+    "panel.problems.emptyDesc": "Your flowchart graph structure and code pass all checks",
+    "toast.imported": "Flowchart imported successfully.",
+    "toast.importFailed": "Import failed: {error}",
+    "toast.cleared": "Canvas cleared. A fresh Start block is ready.",
+    "toast.exported": "Flowchart exported to file.",
+    "toast.inputPaused": "Execution paused at Input block. Type your value in the Terminal prompt to resume.",
+    "canvas.loading": "Loading Flowchart Canvas..."
   }
 }

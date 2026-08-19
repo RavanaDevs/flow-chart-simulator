@@ -2,14 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRunStore } from "@/stores/run-store";
+import { useT } from "@/hooks/use-t";
 import { ChevronRight } from "lucide-react";
 
-/**
- * Reads a value inline, in the flow of the log, so the terminal keeps reading
- * as a console transcript. No border, no background, no submit button — the
- * caret is the only thing marking it as live.
- */
 export const TerminalPrompt: React.FC = () => {
+  const { t } = useT();
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { state, submitInput } = useRunStore();
@@ -51,7 +48,7 @@ export const TerminalPrompt: React.FC = () => {
         spellCheck={false}
         autoComplete="off"
         className="flex-1 border-none bg-transparent p-0 font-mono text-xs font-semibold text-foreground caret-primary outline-none placeholder:font-normal placeholder:text-muted-foreground/60"
-        placeholder={`type a ${state.pendingInput.type} and press Enter`}
+        placeholder={t("panel.terminal.typeInputPlaceholder", { type: state.pendingInput.type })}
       />
     </form>
   );

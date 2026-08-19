@@ -21,7 +21,7 @@ export function compile(graph: FlowGraph): CompileResult {
   if (startNodes.length === 0) {
     addDiag({
       code: "NO_START",
-      params: { count: 0 },
+      params: {},
       severity: "error",
     });
     return { ok: false, diagnostics };
@@ -29,7 +29,7 @@ export function compile(graph: FlowGraph): CompileResult {
     for (const sn of startNodes) {
       addDiag({
         code: "MULTIPLE_START",
-        params: { count: startNodes.length },
+        params: {},
         severity: "error",
         nodeId: sn.id,
       });

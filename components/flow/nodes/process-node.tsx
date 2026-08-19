@@ -4,8 +4,10 @@ import { NodeFrame } from "./node-frame";
 import { ExpressionField } from "./expression-field";
 import { countLines } from "../shapes/geometry";
 import { useGraphStore } from "@/stores/graph-store";
+import { useT } from "@/hooks/use-t";
 
 export const ProcessNode: React.FC<NodeProps> = ({ id, selected, data }) => {
+  const { t } = useT();
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
 
   const source = (data as { source?: string }).source ?? "x = 1";
@@ -14,12 +16,12 @@ export const ProcessNode: React.FC<NodeProps> = ({ id, selected, data }) => {
     <NodeFrame id={id} kind="process" isSelected={selected} lines={countLines(source)}>
       <div className="flex flex-col items-center gap-1">
         <span className="text-[10px] uppercase font-bold text-muted-foreground">
-          Process
+          {t("block.process")}
         </span>
         <ExpressionField
           value={source}
           onChange={(val) => updateNodeData(id, { source: val })}
-          placeholder="x = 1"
+          placeholder={t("block.processPlaceholder")}
           multiline
         />
       </div>

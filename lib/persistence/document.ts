@@ -1,5 +1,6 @@
 import { FlowNode, FlowEdge } from "../graph/types";
 import { validateImport } from "./validate-import";
+import { RunError } from "../errors/codes";
 
 export const DOCUMENT_VERSION = 2;
 
@@ -37,11 +38,17 @@ export function exportDocument(nodes: FlowNode[], edges: FlowEdge[]): string {
 
 export function importDocument(
   jsonStr: string
-): { ok: true; doc: FlowDocument } | { ok: false; error: string } {
+): { ok: true; doc: FlowDocument } | { ok: false; error: RunError } {
   try {
     const raw = JSON.parse(jsonStr);
     return validateImport(raw);
   } catch (err) {
-    return { ok: false, error: `Invalid JSON format: ${String(err)}` };
+    return {
+      ok: false,
+      error: {
+        code: "IMPORT_INVALID_JSON",
+        params: { error: String(err) },
+      },
+    };
   }
 }
