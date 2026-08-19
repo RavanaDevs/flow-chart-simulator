@@ -4,6 +4,8 @@ import { useGraphStore } from "@/stores/graph-store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getShapeSize } from "@/components/flow/shapes/geometry";
+import { GRID_SIZE } from "@/lib/graph/grid";
 import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork } from "lucide-react";
 
 type PaletteItem = {
@@ -63,11 +65,23 @@ export const Palette: React.FC = () => {
 
   const handleClickAdd = (kind: NodeKind, disabled: boolean) => {
     if (disabled) return;
-    // Find position near selected node or default offset
+
     const selectedNode = nodes.find((n) => n.id === selectedId);
-    const basePos = selectedNode ? selectedNode.position : { x: 250, y: 150 };
-    const newPos = { x: basePos.x + 20, y: basePos.y + 80 };
-    addNode(kind, newPos);
+    if (!selectedNode) {
+      addNode(kind, { x: 240, y: 144 });
+      return;
+    }
+
+    // Drop the new block directly below the selected one and share a centre
+    // line, so the connecting arrow comes out straight. Every shape dimension
+    // is a whole number of grid steps, so this offset survives snapping.
+    const base = getShapeSize(selectedNode.kind);
+    const next = getShapeSize(kind);
+
+    addNode(kind, {
+      x: selectedNode.position.x + base.width / 2 - next.width / 2,
+      y: selectedNode.position.y + base.height + GRID_SIZE * 3,
+    });
   };
 
   return (

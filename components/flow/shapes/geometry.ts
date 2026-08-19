@@ -1,4 +1,5 @@
 import { NodeKind } from "@/lib/graph/types";
+import { GRID_SIZE } from "@/lib/graph/grid";
 
 export type ShapeGeometry = {
   width: number;
@@ -6,15 +7,46 @@ export type ShapeGeometry = {
   pathD: string;
 };
 
+/**
+ * Every dimension must be a multiple of this.
+ *
+ * Snapping moves a node's top-left corner onto the grid, but ports sit at the
+ * midpoints of its edges. A port therefore lands on x + width/2 (or y +
+ * height/2), so a centred port only falls on a grid line when half the
+ * dimension is itself a whole number of grid steps.
+ *
+ * Get this wrong and two blocks of different widths can never be lined up: with
+ * a 140-wide Start and a 180-wide Input, the closest reachable offset is 4px,
+ * which getSmoothStepPath draws as a visible dogleg no amount of dragging can
+ * remove.
+ */
+export const SHAPE_UNIT = GRID_SIZE * 2;
+
+const SIZES: Record<NodeKind, { width: number; height: number }> = {
+  start: { width: 160, height: 64 },
+  stop: { width: 160, height: 64 },
+  input: { width: 192, height: 64 },
+  output: { width: 192, height: 64 },
+  process: { width: 192, height: 64 },
+  if: { width: 224, height: 128 },
+};
+
+/** Inset so the stroke is not clipped by the SVG viewBox. */
+const PAD = 2;
+
+export function getShapeSize(kind: NodeKind): { width: number; height: number } {
+  return SIZES[kind];
+}
+
 export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
+  const { width: w, height: h } = SIZES[kind];
+  const p = PAD;
+
   switch (kind) {
     case "start":
     case "stop": {
-      // Stadium / Pill shape (140x50, rx=23, p=2)
-      const w = 140;
-      const h = 50;
-      const p = 2;
-      const r = 23;
+      // Stadium: the radius is half the height, so the ends are true semicircles.
+      const r = (h - p * 2) / 2;
       return {
         width: w,
         height: h,
@@ -24,11 +56,9 @@ export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
 
     case "input":
     case "output": {
-      // Parallelogram with horizontal skew (180x60, p=2)
-      const w = 180;
-      const h = 60;
-      const p = 2;
-      const skew = 18;
+      // Parallelogram. The skew only shifts the outline; ports stay on the
+      // bounding box edges, so it does not affect alignment.
+      const skew = 16;
       return {
         width: w,
         height: h,
@@ -37,10 +67,6 @@ export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
     }
 
     case "process": {
-      // Rounded Rectangle (180x60, rx=8, p=2)
-      const w = 180;
-      const h = 60;
-      const p = 2;
       const r = 8;
       return {
         width: w,
@@ -50,10 +76,6 @@ export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
     }
 
     case "if": {
-      // Diamond shape (200x110, p=2)
-      const w = 200;
-      const h = 110;
-      const p = 2;
       return {
         width: w,
         height: h,
