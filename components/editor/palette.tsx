@@ -6,61 +6,64 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getShapeSize, countLines } from "@/components/flow/shapes/geometry";
 import { GRID_SIZE } from "@/lib/graph/grid";
+import { useT } from "@/hooks/use-t";
+import { UiKey } from "@/lib/i18n/ui-keys";
 import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork, CircleDot } from "lucide-react";
 
-type PaletteItem = {
+type PaletteItemConfig = {
   kind: NodeKind;
-  label: string;
-  description: string;
+  labelKey: UiKey;
+  descKey: UiKey;
   icon: React.ReactNode;
 };
 
-const ITEMS: PaletteItem[] = [
+const ITEMS: PaletteItemConfig[] = [
   {
     kind: "start",
-    label: "Start",
-    description: "Begins the flowchart",
+    labelKey: "palette.block.start",
+    descKey: "palette.block.startDesc",
     icon: <Play className="h-4 w-4 text-emerald-500" />,
   },
   {
     kind: "process",
-    label: "Process",
-    description: "Calculates or sets a variable (x = 1)",
+    labelKey: "palette.block.process",
+    descKey: "palette.block.processDesc",
     icon: <Cpu className="h-4 w-4 text-blue-500" />,
   },
   {
     kind: "input",
-    label: "Input",
-    description: "Asks user for input value",
+    labelKey: "palette.block.input",
+    descKey: "palette.block.inputDesc",
     icon: <ArrowDownToLine className="h-4 w-4 text-purple-500" />,
   },
   {
     kind: "output",
-    label: "Output",
-    description: "Displays a message or answer",
+    labelKey: "palette.block.output",
+    descKey: "palette.block.outputDesc",
     icon: <ArrowUpFromLine className="h-4 w-4 text-cyan-500" />,
   },
   {
     kind: "if",
-    label: "Decision (If)",
-    description: "Branches on true/false condition",
+    labelKey: "palette.block.decision",
+    descKey: "palette.block.decisionDesc",
     icon: <GitFork className="h-4 w-4 text-amber-500" />,
   },
   {
     kind: "connector",
-    label: "Connector",
-    description: "Joins several paths back into one",
+    labelKey: "palette.block.connector",
+    descKey: "palette.block.connectorDesc",
     icon: <CircleDot className="h-4 w-4 text-slate-400" />,
   },
   {
     kind: "stop",
-    label: "Stop",
-    description: "Ends execution",
+    labelKey: "palette.block.stop",
+    descKey: "palette.block.stopDesc",
     icon: <Square className="h-4 w-4 text-red-500" />,
   },
 ];
 
 export const Palette: React.FC = () => {
+  const { t } = useT();
   const { nodes, addNode, selectedId } = useGraphStore();
   const hasStart = nodes.some((n) => n.kind === "start");
 
@@ -78,9 +81,6 @@ export const Palette: React.FC = () => {
       return;
     }
 
-    // Drop the new block directly below the selected one and share a centre
-    // line, so the connecting arrow comes out straight. Every shape dimension
-    // is a whole number of grid steps, so this offset survives snapping.
     const data = selectedNode.data as { source?: string; names?: string };
     const base = getShapeSize(
       selectedNode.kind,
@@ -98,15 +98,12 @@ export const Palette: React.FC = () => {
     <Card className="h-full rounded-none border-y-0 border-l-0 shadow-none">
       <CardHeader className="p-3 border-b">
         <CardTitle className="text-xs uppercase font-bold text-muted-foreground flex items-center justify-between">
-          <span>Blocks Palette</span>
-          <Badge variant="outline" className="text-[10px]">Drag or Click</Badge>
+          <span>{t("palette.title")}</span>
+          <Badge variant="outline" className="text-[10px]">{t("palette.dragOrClick")}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 space-y-2 overflow-y-auto">
         {ITEMS.map((item) => {
-          // A flowchart has exactly one Start. Grey the item out rather than
-          // removing it, so the block is still discoverable and the reason it
-          // is unavailable is visible.
           const disabled = item.kind === "start" && hasStart;
 
           return (
@@ -118,7 +115,7 @@ export const Palette: React.FC = () => {
               aria-disabled={disabled}
               title={
                 disabled
-                  ? "Your flowchart already has a Start block"
+                  ? t("palette.startDisabledTitle")
                   : undefined
               }
               className={cn(
@@ -138,10 +135,10 @@ export const Palette: React.FC = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-semibold text-foreground">
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  {disabled ? "Already on the canvas" : item.description}
+                  {disabled ? t("palette.alreadyOnCanvas") : t(item.descKey)}
                 </span>
               </div>
             </div>

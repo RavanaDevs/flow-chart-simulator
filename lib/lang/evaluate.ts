@@ -25,11 +25,21 @@ export function evaluate(
         expr.name,
         Object.keys(vars)
       );
+      if (suggestion) {
+        return {
+          ok: false,
+          error: {
+            code: "UNKNOWN_VARIABLE_DID_YOU_MEAN",
+            params: { name: expr.name, suggestion },
+            span: expr.span,
+          },
+        };
+      }
       return {
         ok: false,
         error: {
           code: "UNKNOWN_VARIABLE",
-          params: { name: expr.name, suggestion },
+          params: { name: expr.name },
           span: expr.span,
         },
       };

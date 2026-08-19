@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useGraphStore } from "@/stores/graph-store";
 import { useRunStore } from "@/stores/run-store";
 import { compile } from "@/lib/graph/compile";
+import { useT } from "@/hooks/use-t";
+import { LocaleToggle } from "./locale-toggle";
 import {
   Play,
   StepForward,
@@ -41,6 +43,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   followNode,
   setFollowNode,
 }) => {
+  const { t, resolveMessage } = useT();
   const { nodes, edges, loadDocument, resetGraph } = useGraphStore();
   const [confirmNewOpen, setConfirmNewOpen] = useState(false);
   const { state, history, loadProgram, tick, stepBack, resetRun } = useRunStore();
@@ -48,7 +51,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const handleRun = () => {
     const cRes = compile({ nodes, edges });
     if (!cRes.ok) {
-      toast.error("Cannot run flowchart: Please resolve the errors in the Problems panel.");
+      const errRes = resolveMessage(cRes.diagnostics[0]);
+      toast.error(errRes.message);
       return;
     }
     loadProgram(cRes.program);
@@ -59,7 +63,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     if (state.status === "idle") {
       const cRes = compile({ nodes, edges });
       if (!cRes.ok) {
-        toast.error("Cannot step flowchart: Please resolve the errors first.");
+        const errRes = resolveMessage(cRes.diagnostics[0]);
+        toast.error(errRes.message);
         return;
       }
       loadProgram(cRes.program);
@@ -76,7 +81,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     a.download = `flowchart-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Flowchart exported successfully.");
+    toast.success(t("toast.exported"));
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,19 +92,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       const content = evt.target?.result as string;
       const res = importDocument(content);
       if (!res.ok) {
-        toast.error(`Import failed: ${res.error}`);
+        const { message } = resolveMessage(res.error);
+        toast.error(t("toast.importFailed", { error: message }));
         return;
       }
       loadDocument(res.doc.nodes, res.doc.edges);
       resetRun();
-      toast.success("Flowchart imported successfully.");
+      toast.success(t("toast.imported"));
     };
     reader.readAsText(file);
   };
 
-  // Clearing the canvas must also drop the compiled Program and the autosave
-  // slot, or a mid-run reset would keep executing a chart that no longer
-  // exists and a reload would resurrect what the student just cleared.
   const handleNew = () => {
     resetGraph();
     resetRun();
@@ -109,7 +112,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       // private-mode or quota failures are not worth blocking the reset over
     }
     setConfirmNewOpen(false);
-    toast.success("Canvas cleared. A fresh Start block is ready.");
+    toast.success(t("toast.cleared"));
   };
 
   const isRunning = state.status === "running";
@@ -125,7 +128,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="bg-emerald-600 font-semibold text-white hover:bg-emerald-700"
         >
           <Play className="mr-1.5 h-4 w-4 fill-current" />
-          Run
+          {t("toolbar.run")}
         </Button>
 
         <Button
@@ -135,7 +138,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           disabled={isRunning || state.status === "finished" || state.status === "error"}
         >
           <StepForward className="mr-1.5 h-4 w-4" />
-          Step
+          {t("toolbar.step")}
         </Button>
 
         <Button
@@ -143,10 +146,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           variant="outline"
           onClick={stepBack}
           disabled={history.length === 0 || isRunning}
-          title="Step backwards one state"
+          title={t("toolbar.stepBack")}
         >
           <Undo2 className="mr-1.5 h-4 w-4" />
-          Step Back
+          {t("toolbar.stepBack")}
         </Button>
 
         <Button
@@ -156,7 +159,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           disabled={state.status === "idle" && history.length === 0}
         >
           <RotateCcw className="mr-1.5 h-4 w-4" />
-          Reset
+          {t("toolbar.reset")}
         </Button>
       </div>
 
@@ -164,16 +167,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Gauge className="h-4 w-4" />
-          <span>Speed:</span>
+          <span>{t("toolbar.speed")}:</span>
           <select
             value={speedMs}
             onChange={(e) => setSpeedMs(Number(e.target.value))}
             className="rounded border border-border bg-background px-2 py-1 text-xs font-semibold"
           >
-            <option value={800}>Slow (800ms)</option>
-            <option value={400}>Normal (400ms)</option>
-            <option value={150}>Fast (150ms)</option>
-            <option value={0}>Instant</option>
+            <option value={800}>{t("toolbar.speedSlow")}</option>
+            <option value={400}>{t("toolbar.speedNormal")}</option>
+            <option value={150}>{t("toolbar.speedFast")}</option>
+            <option value={0}>{t("toolbar.speedInstant")}</option>
           </select>
         </div>
 
@@ -181,40 +184,40 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           size="sm"
           variant={followNode ? "secondary" : "ghost"}
           onClick={() => setFollowNode(!followNode)}
-          title="Follow active block in viewport"
+          title={t("toolbar.follow")}
           className="text-xs"
         >
           <Focus className="mr-1.5 h-4 w-4" />
-          Follow Node
+          {t("toolbar.follow")}
         </Button>
+
+        {/* Locale Toggle */}
+        <LocaleToggle />
 
         {/* Persistence Actions */}
         <div className="flex items-center gap-1.5 border-l border-border pl-3">
           <Dialog open={confirmNewOpen} onOpenChange={setConfirmNewOpen}>
             <DialogTrigger
               render={
-                <Button size="sm" variant="outline" title="Clear the canvas" />
+                <Button size="sm" variant="outline" title={t("toolbar.confirmNewTitle")} />
               }
             >
               <FilePlus2 className="mr-1.5 h-3.5 w-3.5" />
-              New
+              {t("toolbar.new")}
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Clear the canvas?</DialogTitle>
+                <DialogTitle>{t("toolbar.confirmNewTitle")}</DialogTitle>
                 <DialogDescription>
-                  This deletes every block and arrow in this flowchart, and
-                  removes the saved copy in this browser. You will get a fresh
-                  Start block. This cannot be undone — export first if you want
-                  to keep it.
+                  {t("toolbar.confirmNewDescription")}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose render={<Button variant="outline" />}>
-                  Cancel
+                  {t("toolbar.cancel")}
                 </DialogClose>
                 <Button variant="destructive" onClick={handleNew}>
-                  Clear everything
+                  {t("toolbar.confirm")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -222,7 +225,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
           <Button size="sm" variant="outline" onClick={handleExport}>
             <Download className="mr-1.5 h-3.5 w-3.5" />
-            Export
+            {t("toolbar.export")}
           </Button>
 
           <label className="cursor-pointer">
@@ -234,7 +237,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             />
             <div className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold shadow-xs hover:bg-accent hover:text-accent-foreground">
               <Upload className="mr-1.5 h-3.5 w-3.5" />
-              Import
+              {t("toolbar.import")}
             </div>
           </label>
         </div>

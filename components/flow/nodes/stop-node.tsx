@@ -1,13 +1,15 @@
 import React from "react";
 import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
+import { useT } from "@/hooks/use-t";
 
 export const StopNode: React.FC<NodeProps> = ({ id, selected }) => {
+  const { t } = useT();
 
   return (
     <NodeFrame id={id} kind="stop" isSelected={selected}>
       <span className="font-semibold uppercase tracking-wider text-foreground">
-        Stop
+        {t("block.stop")}
       </span>
     </NodeFrame>
   );

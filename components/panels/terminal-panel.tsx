@@ -4,15 +4,15 @@ import React, { useRef, useEffect } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { TerminalLine } from "./terminal-line";
 import { TerminalPrompt } from "./terminal-prompt";
+import { useT } from "@/hooks/use-t";
 import { Terminal as TerminalIcon, ChevronsUp } from "lucide-react";
 
 export const TerminalPanel: React.FC = () => {
+  const { t } = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const terminal = useRunStore((s) => s.state.terminal);
   const truncated = useRunStore((s) => s.state.terminalTruncated);
 
-  // Autoscroll only when the student is already at the bottom — being yanked
-  // down while reading back through an error is worse than missing a line.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -31,7 +31,7 @@ export const TerminalPanel: React.FC = () => {
         <div className="flex items-center gap-1.5 rounded border border-border bg-muted/60 px-2 py-1 font-mono text-[11px] text-muted-foreground italic">
           <ChevronsUp className="h-3 w-3 shrink-0" />
           <span>
-            Older output was hidden — showing the most recent lines only.
+            {t("panel.terminal.olderTruncated")}
           </span>
         </div>
       )}
@@ -39,9 +39,9 @@ export const TerminalPanel: React.FC = () => {
       {terminal.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
           <TerminalIcon className="mb-2 h-8 w-8 opacity-40" />
-          <p className="text-xs font-medium">Terminal log is empty</p>
+          <p className="text-xs font-medium">{t("panel.terminal.empty")}</p>
           <p className="text-[11px] opacity-70">
-            Click Run or Step to execute your flowchart
+            {t("panel.terminal.emptyDesc")}
           </p>
         </div>
       ) : (

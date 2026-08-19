@@ -21,6 +21,7 @@ import { useAutosave } from "@/hooks/use-autosave";
 import { useGraphStore } from "@/stores/graph-store";
 import { useRunStore } from "@/stores/run-store";
 import { compile } from "@/lib/graph/compile";
+import { useT } from "@/hooks/use-t";
 import { Terminal as TerminalIcon, Variable, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -38,6 +39,7 @@ const FlowCanvas = dynamic(
 );
 
 export const EditorShell: React.FC = () => {
+  const { t } = useT();
   const [speedMs, setSpeedMs] = useState(400);
   const [followNode, setFollowNode] = useState(true);
   const [activeTab, setActiveTab] = useState("terminal");
@@ -45,8 +47,6 @@ export const EditorShell: React.FC = () => {
   const status = useRunStore((s) => s.state.status);
   const { nodes, edges } = useGraphStore();
 
-  // Reveal the terminal when execution starts, adjusting during render rather
-  // than in an effect so the tab never paints on the wrong panel first.
   const [prevStatus, setPrevStatus] = useState(status);
   if (prevStatus !== status) {
     setPrevStatus(status);
@@ -58,16 +58,15 @@ export const EditorShell: React.FC = () => {
   useEffect(() => {
     if (status === "awaiting-input") {
       toast.info(
-        "Execution paused at Input block. Type your value in the Terminal prompt to resume.",
+        t("toast.inputPaused"),
         { id: "awaiting-input-toast" }
       );
     }
-  }, [status]);
+  }, [status, t]);
 
   useRunner(speedMs);
   useAutosave();
 
-  // Calculate diagnostic error count for Problems badge
   const cRes = useMemo(() => compile({ nodes, edges }), [nodes, edges]);
   const errorCount = useMemo(() => {
     if (!cRes.ok) return cRes.diagnostics.length;
@@ -106,6 +105,7 @@ const InnerEditorShell: React.FC<{
   setActiveTab,
   errorCount,
 }) => {
+  const { t } = useT();
   useFollowNode(followNode);
 
   return (
@@ -149,21 +149,21 @@ const InnerEditorShell: React.FC<{
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <TerminalIcon className="mr-1.5 h-3.5 w-3.5" />
-                      Terminal
+                      {t("tab.terminal")}
                     </TabsTrigger>
                     <TabsTrigger
                       value="variables"
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <Variable className="mr-1.5 h-3.5 w-3.5" />
-                      Variables
+                      {t("tab.variables")}
                     </TabsTrigger>
                     <TabsTrigger
                       value="problems"
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                      Problems
+                      {t("tab.problems")}
                       {errorCount > 0 && (
                         <Badge
                           variant="destructive"

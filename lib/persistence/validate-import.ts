@@ -1,6 +1,7 @@
 import { FlowDocument, DOCUMENT_VERSION } from "./document";
 import { FlowNode, FlowEdge, NodeKind } from "../graph/types";
 import { migrateEdge, migrateNodeData } from "./migrate";
+import { RunError } from "../errors/codes";
 
 const VALID_KINDS: Set<NodeKind> = new Set([
   "start",
@@ -14,9 +15,9 @@ const VALID_KINDS: Set<NodeKind> = new Set([
 
 export function validateImport(
   obj: unknown
-): { ok: true; doc: FlowDocument } | { ok: false; error: string } {
+): { ok: true; doc: FlowDocument } | { ok: false; error: RunError } {
   if (!obj || typeof obj !== "object") {
-    return { ok: false, error: "Root document must be an object." };
+    return { ok: false, error: { code: "IMPORT_NOT_AN_OBJECT", params: {} } };
   }
 
   const record = obj as Record<string, unknown>;
@@ -27,30 +28,42 @@ export function validateImport(
   if (version < 1 || version > DOCUMENT_VERSION) {
     return {
       ok: false,
-      error: `Unsupported document version ${String(record.version)}. This app understands versions 1 to ${DOCUMENT_VERSION}.`,
+      error: {
+        code: "IMPORT_UNSUPPORTED_VERSION",
+        params: {
+          version: String(record.version),
+          maxVersion: DOCUMENT_VERSION,
+        },
+      },
     };
   }
 
   if (!Array.isArray(record.nodes)) {
-    return { ok: false, error: "Document must contain a 'nodes' array." };
+    return { ok: false, error: { code: "IMPORT_BAD_NODES_ARRAY", params: {} } };
   }
 
   if (!Array.isArray(record.edges)) {
-    return { ok: false, error: "Document must contain an 'edges' array." };
+    return { ok: false, error: { code: "IMPORT_BAD_EDGES_ARRAY", params: {} } };
   }
 
   const nodes: FlowNode[] = [];
   for (let i = 0; i < record.nodes.length; i++) {
     const n = record.nodes[i];
     if (!n || typeof n !== "object") {
-      return { ok: false, error: `Node at index ${i} is invalid.` };
+      return { ok: false, error: { code: "IMPORT_BAD_NODE", params: { index: i } } };
     }
     const nodeObj = n as Record<string, unknown>;
     if (typeof nodeObj.id !== "string" || !nodeObj.id) {
-      return { ok: false, error: `Node at index ${i} missing valid 'id'.` };
+      return { ok: false, error: { code: "IMPORT_BAD_NODE_ID", params: { index: i } } };
     }
     if (!VALID_KINDS.has(nodeObj.kind as NodeKind)) {
-      return { ok: false, error: `Node ${nodeObj.id} has unknown kind '${nodeObj.kind}'.` };
+      return {
+        ok: false,
+        error: {
+          code: "IMPORT_UNKNOWN_KIND",
+          params: { id: nodeObj.id, kind: String(nodeObj.kind) },
+        },
+      };
     }
     if (
       !nodeObj.position ||
@@ -58,7 +71,7 @@ export function validateImport(
       typeof (nodeObj.position as Record<string, unknown>).x !== "number" ||
       typeof (nodeObj.position as Record<string, unknown>).y !== "number"
     ) {
-      return { ok: false, error: `Node ${nodeObj.id} missing valid position.` };
+      return { ok: false, error: { code: "IMPORT_BAD_POSITION", params: { id: nodeObj.id } } };
     }
     const data = migrateNodeData(
       nodeObj.kind as NodeKind,
@@ -80,11 +93,11 @@ export function validateImport(
   for (let i = 0; i < record.edges.length; i++) {
     const e = record.edges[i];
     if (!e || typeof e !== "object") {
-      return { ok: false, error: `Edge at index ${i} is invalid.` };
+      return { ok: false, error: { code: "IMPORT_BAD_EDGE", params: { index: i } } };
     }
     const edgeObj = e as Record<string, unknown>;
     if (typeof edgeObj.id !== "string" || typeof edgeObj.source !== "string" || typeof edgeObj.target !== "string") {
-      return { ok: false, error: `Edge at index ${i} missing id, source, or target.` };
+      return { ok: false, error: { code: "IMPORT_BAD_EDGE_IDS", params: { index: i } } };
     }
     const { sourceHandle, targetHandle } = migrateEdge(edgeObj);
 

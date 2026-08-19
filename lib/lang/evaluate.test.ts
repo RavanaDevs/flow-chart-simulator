@@ -21,13 +21,13 @@ describe("evaluate", () => {
     if (res.ok) expect(res.value).toBe("Total: 55");
   });
 
-  it("suggests nearest variable on UNKNOWN_VARIABLE", () => {
+  it("suggests nearest variable on UNKNOWN_VARIABLE_DID_YOU_MEAN", () => {
     const parsed = parseExpression("totl + 1");
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     const res = evaluate(parsed.expr, { total: 10 });
     expect(res.ok).toBe(false);
-    if (!res.ok && res.error.code === "UNKNOWN_VARIABLE") {
+    if (!res.ok && res.error.code === "UNKNOWN_VARIABLE_DID_YOU_MEAN") {
       expect(res.error.params.suggestion).toBe("total");
     }
   });
