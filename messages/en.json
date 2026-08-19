@@ -90,5 +90,29 @@
   "MULTIPLE_OUTGOING_EDGES": {
     "message": "This block has multiple arrows connected to the same output.",
     "hint": "A block can only have one outgoing arrow per handle."
+  },
+  "PARSE_TRAILING_COMMA": {
+    "message": "There is a comma with nothing after it.",
+    "hint": "Remove the last comma, or add another value after it."
+  },
+  "PARSE_EMPTY_LIST_ITEM": {
+    "message": "Two commas in a row — something is missing between them.",
+    "hint": "Put a value between the commas, or delete one of them."
+  },
+  "OUTPUT_EMPTY": {
+    "message": "This Output block is empty.",
+    "hint": "Type what you want to show, e.g. \"Your total is: \", total"
+  },
+  "DUPLICATE_INPUT_NAME": {
+    "message": "This Input block asks for '{name}' twice.",
+    "hint": "Each name in an Input block must be different."
+  },
+  "START_HAS_INBOUND": {
+    "message": "An arrow points into the Start block.",
+    "hint": "Start is where your flowchart begins, so nothing can lead into it. Delete that arrow."
+  },
+  "STOP_HAS_OUTGOING": {
+    "message": "An arrow leads out of a Stop block.",
+    "hint": "Stop ends the program, so nothing can come after it. Delete that arrow."
   }
 }

@@ -29,6 +29,7 @@ export type TokenKind =
   | "PERCENT"
   | "LPAREN"
   | "RPAREN"
+  | "COMMA"
   | "EOF";
 
 export type Token = {

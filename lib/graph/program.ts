@@ -8,7 +8,8 @@ export type CompiledNode =
   | {
       kind: "input";
       id: NodeId;
-      varName: string;
+      /** One or more names; the block prompts for each in turn. */
+      varNames: string[];
       valueType: InputValueType;
       next: NodeId;
       nextEdgeId: EdgeId;
@@ -16,7 +17,8 @@ export type CompiledNode =
   | {
       kind: "output";
       id: NodeId;
-      expr: Expr;
+      /** Comma-separated values; formatted then joined. */
+      exprs: Expr[];
       next: NodeId;
       nextEdgeId: EdgeId;
     }

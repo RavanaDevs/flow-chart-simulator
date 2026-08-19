@@ -1,6 +1,7 @@
 import React from "react";
-import { Handle, Position, NodeProps } from "@xyflow/react";
+import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
+import { NodePorts } from "./node-ports";
 import { ExpressionField } from "./expression-field";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
@@ -14,22 +15,17 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
   const isActive = currentNodeId === id;
   const isAwaiting = isActive && status === "awaiting-input";
 
-  const varName = (data as { varName?: string }).varName ?? "x";
+  const names = (data as { names?: string }).names ?? "x";
   const valueType = ((data as { valueType?: InputValueType }).valueType ?? "number") as InputValueType;
 
   return (
-    <NodeFrame id={id} kind="input" isSelected={selected} isActive={isActive}>
+    <NodeFrame id={id} kind="input" isSelected={selected}>
+      <NodePorts kind="input" />
       {isAwaiting && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-lg animate-bounce whitespace-nowrap">
           <span>Type in Terminal</span> ↵
         </div>
       )}
-
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!h-3 !w-3 !bg-primary border-2 border-background"
-      />
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-muted-foreground">
           <span>Input</span>
@@ -45,16 +41,11 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
           </select>
         </div>
         <ExpressionField
-          value={varName}
-          onChange={(val) => updateNodeData(id, { varName: val })}
-          placeholder="varName"
+          value={names}
+          onChange={(val) => updateNodeData(id, { names: val })}
+          placeholder="name, name"
         />
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!h-3 !w-3 !bg-primary border-2 border-background"
-      />
     </NodeFrame>
   );
 };

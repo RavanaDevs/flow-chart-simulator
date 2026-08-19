@@ -12,6 +12,12 @@ export type ErrorCode =
   | "LEX_UNTERMINATED_STRING"
   | "PARSE_UNEXPECTED_TOKEN"
   | "PARSE_TRAILING_INPUT"
+  | "PARSE_TRAILING_COMMA"
+  | "PARSE_EMPTY_LIST_ITEM"
+  | "OUTPUT_EMPTY"
+  | "DUPLICATE_INPUT_NAME"
+  | "START_HAS_INBOUND"
+  | "STOP_HAS_OUTGOING"
   | "PARSE_EXPECTED_IDENTIFIER"
   | "PARSE_EXPECTED_EQUALS"
   | "PROCESS_MISSING_EQUALS"
@@ -37,6 +43,12 @@ export type RunError =
   | Err<"LEX_UNTERMINATED_STRING", Record<string, never>>
   | Err<"PARSE_UNEXPECTED_TOKEN", { found: string; expected: string }>
   | Err<"PARSE_TRAILING_INPUT", { extraText: string }>
+  | Err<"PARSE_TRAILING_COMMA", Record<string, never>>
+  | Err<"PARSE_EMPTY_LIST_ITEM", { index: number }>
+  | Err<"OUTPUT_EMPTY", Record<string, never>>
+  | Err<"DUPLICATE_INPUT_NAME", { name: string }>
+  | Err<"START_HAS_INBOUND", Record<string, never>>
+  | Err<"STOP_HAS_OUTGOING", Record<string, never>>
   | Err<"PARSE_EXPECTED_IDENTIFIER", { found: string }>
   | Err<"PARSE_EXPECTED_EQUALS", { found: string }>
   | Err<"PROCESS_MISSING_EQUALS", { src: string }>

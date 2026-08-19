@@ -13,6 +13,7 @@ export type RunStoreState = {
 
   loadProgram: (program: Program) => void;
   tick: () => void;
+  tickBatch: (maxSteps: number) => void;
   submitInput: (raw: string) => void;
   stepBack: () => void;
   resetRun: () => void;
@@ -51,6 +52,35 @@ export const useRunStore = create<RunStoreState>((set, get) => ({
         history: updatedHistory,
       });
     }
+  },
+
+  /**
+   * Runs up to maxSteps in one commit. At the fastest speed a step every
+   * timer tick means one React render per step, so a 10,000-step program
+   * took minutes to reach its own step-budget error. Stops early the moment
+   * execution leaves 'running' so a pause for input is never stepped past.
+   */
+  tickBatch: (maxSteps) => {
+    const { program, state, history } = get();
+    if (!program || state.status !== "running") return;
+
+    let current = state;
+    const collected: RunState[] = [];
+
+    for (let i = 0; i < maxSteps; i++) {
+      const next = step(program, current);
+      if (next === current) break;
+      collected.push(current);
+      current = next;
+      if (current.status !== "running") break;
+    }
+
+    if (current === state) return;
+
+    set({
+      state: current,
+      history: [...history, ...collected].slice(-MAX_HISTORY),
+    });
   },
 
   submitInput: (raw) => {

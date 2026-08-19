@@ -3,26 +3,7 @@ import { RunState, TerminalLine } from "./state";
 import { STEP_BUDGET, detectCycle } from "./budget";
 import { evaluate } from "../lang/evaluate";
 import { typeOf, formatValue } from "../lang/values";
-
-const MAX_TERMINAL_LINES = 2000;
-
-function appendTerminal(
-  terminal: readonly TerminalLine[],
-  line: TerminalLine
-): { lines: TerminalLine[]; truncated: boolean } {
-  if (terminal.length >= MAX_TERMINAL_LINES) {
-    const sliced = terminal.slice(1);
-    return {
-      lines: [
-        ...sliced,
-        { kind: "system", code: "OUTPUT_TRUNCATED" },
-        line,
-      ],
-      truncated: true,
-    };
-  }
-  return { lines: [...terminal, line], truncated: false };
-}
+import { appendTerminal } from "./terminal";
 
 export function step(program: Program, state: RunState): RunState {
   if (state.status === "idle") {
@@ -52,6 +33,7 @@ export function step(program: Program, state: RunState): RunState {
     return {
       ...state,
       status: "error",
+      lastEdgeId: null,
       error: {
         code: "UNREACHABLE_NODE",
         params: { nodeKind: "unknown" },
@@ -75,6 +57,7 @@ export function step(program: Program, state: RunState): RunState {
     return {
       ...state,
       status: "error",
+      lastEdgeId: null,
       error: errLine.error,
       terminal: lines,
       terminalTruncated: state.terminalTruncated || truncated,
@@ -104,7 +87,12 @@ export function step(program: Program, state: RunState): RunState {
       return {
         ...state,
         status: "finished",
-        currentNodeId: null,
+        // Hold the Stop block as current so it stays highlighted, and drop the
+        // travelling edge so the path animation does not run on a program that
+        // has already ended. step() returns early for "finished", so keeping
+        // currentNodeId set cannot resume execution.
+        currentNodeId: currNode.id,
+        lastEdgeId: null,
         stepCount: nextStepCount,
         recentNodeIds: nextRecent,
         terminal: lines,
@@ -121,6 +109,7 @@ export function step(program: Program, state: RunState): RunState {
         return {
           ...state,
           status: "error",
+          lastEdgeId: null,
           error: errWithNode,
           stepCount: nextStepCount,
           recentNodeIds: nextRecent,
@@ -143,25 +132,34 @@ export function step(program: Program, state: RunState): RunState {
     }
 
     case "output": {
-      const evalRes = evaluate(currNode.expr, state.variables);
-      if (!evalRes.ok) {
-        const errWithNode = { ...evalRes.error, nodeId: currNode.id };
-        const errLine: TerminalLine = { kind: "error", error: errWithNode };
-        const { lines, truncated } = appendTerminal(state.terminal, errLine);
-        return {
-          ...state,
-          status: "error",
-          error: errWithNode,
-          stepCount: nextStepCount,
-          recentNodeIds: nextRecent,
-          terminal: lines,
-          terminalTruncated: state.terminalTruncated || truncated,
-        };
+      // Left to right, stopping at the first bad item so the error span
+      // points at that item rather than the whole block.
+      const parts: string[] = [];
+      for (const expr of currNode.exprs) {
+        const evalRes = evaluate(expr, state.variables);
+        if (!evalRes.ok) {
+          const errWithNode = { ...evalRes.error, nodeId: currNode.id };
+          const errLine: TerminalLine = { kind: "error", error: errWithNode };
+          const { lines, truncated } = appendTerminal(state.terminal, errLine);
+          return {
+            ...state,
+            status: "error",
+            lastEdgeId: null,
+            error: errWithNode,
+            stepCount: nextStepCount,
+            recentNodeIds: nextRecent,
+            terminal: lines,
+            terminalTruncated: state.terminalTruncated || truncated,
+          };
+        }
+        parts.push(formatValue(evalRes.value));
       }
 
       const outLine: TerminalLine = {
         kind: "output",
-        text: formatValue(evalRes.value),
+        // Joined with nothing: the student controls spacing through their own
+        // string literals, so what they type is what they get.
+        text: parts.join(""),
       };
       const { lines, truncated } = appendTerminal(state.terminal, outLine);
 
@@ -185,6 +183,7 @@ export function step(program: Program, state: RunState): RunState {
         return {
           ...state,
           status: "error",
+          lastEdgeId: null,
           error: errWithNode,
           stepCount: nextStepCount,
           recentNodeIds: nextRecent,
@@ -205,6 +204,7 @@ export function step(program: Program, state: RunState): RunState {
         return {
           ...state,
           status: "error",
+          lastEdgeId: null,
           error: typeErr,
           stepCount: nextStepCount,
           recentNodeIds: nextRecent,
@@ -227,9 +227,12 @@ export function step(program: Program, state: RunState): RunState {
     }
 
     case "input": {
+      // Ask for the first name only. provideInput() walks the rest of the
+      // list, so the block stays current until every name is filled.
+      const firstName = currNode.varNames[0];
       const promptLine: TerminalLine = {
         kind: "prompt",
-        varName: currNode.varName,
+        varName: firstName,
         valueType: currNode.valueType,
       };
       const { lines, truncated } = appendTerminal(state.terminal, promptLine);
@@ -238,8 +241,10 @@ export function step(program: Program, state: RunState): RunState {
         status: "awaiting-input",
         pendingInput: {
           nodeId: currNode.id,
-          varName: currNode.varName,
+          varName: firstName,
           type: currNode.valueType,
+          index: 0,
+          total: currNode.varNames.length,
         },
         stepCount: nextStepCount,
         recentNodeIds: nextRecent,

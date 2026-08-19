@@ -3,10 +3,13 @@ import { NodeKind } from "@/lib/graph/types";
 import { getShapeGeometry } from "./geometry";
 import { cn } from "@/lib/utils";
 
+/** Where execution is, relative to this block. */
+export type RunPhase = "active" | "finished" | "failed" | null;
+
 type ShapeSvgProps = {
   kind: NodeKind;
   isSelected?: boolean;
-  isActive?: boolean;
+  runPhase?: RunPhase;
   severity?: "error" | "warning" | null;
   className?: string;
 };
@@ -14,7 +17,7 @@ type ShapeSvgProps = {
 export const ShapeSvg: React.FC<ShapeSvgProps> = ({
   kind,
   isSelected,
-  isActive,
+  runPhase,
   severity,
   className,
 }) => {
@@ -36,7 +39,14 @@ export const ShapeSvg: React.FC<ShapeSvgProps> = ({
         className={cn(
           "fill-card stroke-border stroke-2 transition-all",
           isSelected && "stroke-primary stroke-[2.5px] drop-shadow-md",
-          isActive && "fill-primary/10 stroke-primary stroke-[3px] animate-pulse",
+          // Running pulses; finished and failed settle. A continuous pulse on
+          // a program that has ended reads as "still working".
+          runPhase === "active" &&
+            "fill-primary/10 stroke-primary stroke-[3px] animate-pulse",
+          runPhase === "finished" &&
+            "animate-node-settle fill-emerald-500/10 stroke-emerald-500 stroke-[3px]",
+          runPhase === "failed" &&
+            "animate-node-settle fill-destructive/10 stroke-destructive stroke-[3px]",
           severity === "error" && "stroke-destructive stroke-[2.5px] [stroke-dasharray:4_2]",
           severity === "warning" && "stroke-amber-500 stroke-[2.5px]"
         )}

@@ -16,6 +16,14 @@ export type ParseIdentResult =
   | { ok: true; name: string }
   | { ok: false; error: RunError };
 
+export type ParseOutputListResult =
+  | { ok: true; exprs: Expr[] }
+  | { ok: false; error: RunError };
+
+export type ParseIdentListResult =
+  | { ok: true; names: string[]; spans: Span[] }
+  | { ok: false; error: RunError };
+
 class Parser {
   private tokens: Token[];
   private current = 0;
@@ -287,6 +295,81 @@ class Parser {
     };
   }
 
+  /** `expression ("," expression)*` — at least one item, no trailing comma. */
+  public parseExprList(): Expr[] {
+    const exprs: Expr[] = [this.parseExpr()];
+
+    while (this.match("COMMA")) {
+      const afterComma = this.peek();
+      if (this.isAtEnd()) {
+        throw {
+          code: "PARSE_TRAILING_COMMA",
+          params: {},
+          span: [afterComma.start, afterComma.end],
+        };
+      }
+      if (this.check("COMMA")) {
+        throw {
+          code: "PARSE_EMPTY_LIST_ITEM",
+          params: { index: exprs.length },
+          span: [afterComma.start, afterComma.end],
+        };
+      }
+      exprs.push(this.parseExpr());
+    }
+
+    return exprs;
+  }
+
+  /** `IDENTIFIER ("," IDENTIFIER)*` — used by input blocks. */
+  public parseIdentList(): { names: string[]; spans: Span[] } {
+    const names: string[] = [];
+    const spans: Span[] = [];
+
+    for (;;) {
+      const token = this.peek();
+
+      if (this.isAtEnd()) {
+        throw {
+          code: "PARSE_EXPECTED_IDENTIFIER",
+          params: { found: names.length === 0 ? "empty input" : "end of line" },
+          span: [token.start, token.end],
+        };
+      }
+      if (token.kind !== "IDENTIFIER") {
+        if (isKeyword(token.text)) {
+          throw {
+            code: "PROCESS_ASSIGN_TO_RESERVED",
+            params: { name: token.text },
+            span: [token.start, token.end],
+          };
+        }
+        throw {
+          code: "PARSE_EXPECTED_IDENTIFIER",
+          params: { found: token.text },
+          span: [token.start, token.end],
+        };
+      }
+
+      this.advance();
+      names.push(token.text);
+      spans.push([token.start, token.end]);
+
+      if (!this.match("COMMA")) break;
+
+      if (this.isAtEnd()) {
+        const comma = this.tokens[this.current - 1];
+        throw {
+          code: "PARSE_TRAILING_COMMA",
+          params: {},
+          span: [comma.start, comma.end],
+        };
+      }
+    }
+
+    return { names, spans };
+  }
+
   public assertEOF(): void {
     if (!this.isAtEnd()) {
       const currentToken = this.peek();
@@ -304,6 +387,7 @@ class Parser {
 }
 
 export function parseExpression(src: string): ParseExprResult {
+  src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
     return {
@@ -330,6 +414,7 @@ export function parseExpression(src: string): ParseExprResult {
 }
 
 export function parseProcess(src: string): ParseProcessResult {
+  src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
     return {
@@ -421,6 +506,7 @@ export function parseProcess(src: string): ParseProcessResult {
 }
 
 export function parseIdentifier(src: string): ParseIdentResult {
+  src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
     return {
@@ -488,4 +574,57 @@ export function parseIdentifier(src: string): ParseIdentResult {
   }
 
   return { ok: true, name: first.text };
+}
+
+/**
+ * Output blocks take a comma-separated list of values. Each item is formatted
+ * and the results are joined, so `"Total: ", total` prints `Total: 55`.
+ */
+export function parseOutputList(src: string): ParseOutputListResult {
+  src = typeof src === "string" ? src : "";
+  if (src.trim() === "") {
+    return {
+      ok: false,
+      error: { code: "OUTPUT_EMPTY", params: {}, span: [0, 0] },
+    };
+  }
+
+  const lexRes = tokenize(src);
+  if (!lexRes.ok) return lexRes;
+
+  try {
+    const parser = new Parser(lexRes.tokens);
+    const exprs = parser.parseExprList();
+    parser.assertEOF();
+    return { ok: true, exprs };
+  } catch (err: unknown) {
+    return { ok: false, error: err as RunError };
+  }
+}
+
+/** Input blocks take one or more variable names: `age, score`. */
+export function parseIdentifierList(src: string): ParseIdentListResult {
+  src = typeof src === "string" ? src : "";
+  if (src.trim() === "") {
+    return {
+      ok: false,
+      error: {
+        code: "PARSE_EXPECTED_IDENTIFIER",
+        params: { found: "empty input" },
+        span: [0, 0],
+      },
+    };
+  }
+
+  const lexRes = tokenize(src);
+  if (!lexRes.ok) return lexRes;
+
+  try {
+    const parser = new Parser(lexRes.tokens);
+    const { names, spans } = parser.parseIdentList();
+    parser.assertEOF();
+    return { ok: true, names, spans };
+  } catch (err: unknown) {
+    return { ok: false, error: err as RunError };
+  }
 }

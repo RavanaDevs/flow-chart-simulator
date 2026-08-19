@@ -1,7 +1,8 @@
 import React from "react";
 import { NodeKind } from "@/lib/graph/types";
 import { getShapeGeometry } from "../shapes/geometry";
-import { ShapeSvg } from "../shapes/shape-svg";
+import { ShapeSvg, RunPhase } from "../shapes/shape-svg";
+import { useRunStore } from "@/stores/run-store";
 import { cn } from "@/lib/utils";
 import { AlertCircle, AlertTriangle, Trash2 } from "lucide-react";
 import { useGraphStore } from "@/stores/graph-store";
@@ -10,7 +11,6 @@ type NodeFrameProps = {
   id: string;
   kind: NodeKind;
   isSelected?: boolean;
-  isActive?: boolean;
   severity?: "error" | "warning" | null;
   diagnosticMsg?: string;
   children: React.ReactNode;
@@ -20,13 +20,24 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   id,
   kind,
   isSelected,
-  isActive,
   severity,
   diagnosticMsg,
   children,
 }) => {
   const { width, height } = getShapeGeometry(kind);
   const removeNode = useGraphStore((s) => s.removeNode);
+
+  const isCurrent = useRunStore((s) => s.state.currentNodeId === id);
+  const status = useRunStore((s) => s.state.status);
+  const runPhase: RunPhase = !isCurrent
+    ? null
+    : status === "finished"
+      ? "finished"
+      : status === "error"
+        ? "failed"
+        : status === "running" || status === "awaiting-input"
+          ? "active"
+          : null;
 
   return (
     <div
@@ -36,7 +47,7 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
       <ShapeSvg
         kind={kind}
         isSelected={isSelected}
-        isActive={isActive}
+        runPhase={runPhase}
         severity={severity}
       />
 

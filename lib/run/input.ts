@@ -1,7 +1,13 @@
 import { Program } from "../graph/program";
 import { RunState, TerminalLine } from "./state";
 import { Value } from "../lang/values";
+import { appendTerminal } from "./terminal";
 
+/**
+ * Supplies the value the student typed for the name currently being asked
+ * for. An input block may hold several names; each submission fills one and
+ * either asks for the next or releases execution to the following block.
+ */
 export function provideInput(
   program: Program,
   state: RunState,
@@ -11,13 +17,19 @@ export function provideInput(
     return state;
   }
 
-  const { nodeId, varName, type } = state.pendingInput;
+  const { nodeId, varName, type, index, total } = state.pendingInput;
+
+  const currNode = program.nodes[nodeId];
+  if (!currNode || currNode.kind !== "input") {
+    return state;
+  }
+
   let parsedValue: Value;
 
   if (type === "number") {
     const trimmed = raw.trim();
-    const isNum = /^-?\d+(\.\d+)?$/.test(trimmed);
-    if (!isNum) {
+    if (!/^-?\d+(\.\d+)?$/.test(trimmed)) {
+      // A typo re-asks for the same name rather than killing the program.
       const errLine: TerminalLine = {
         kind: "error",
         error: {
@@ -26,9 +38,11 @@ export function provideInput(
           nodeId,
         },
       };
+      const { lines, truncated } = appendTerminal(state.terminal, errLine);
       return {
         ...state,
-        terminal: [...state.terminal, errLine],
+        terminal: lines,
+        terminalTruncated: state.terminalTruncated || truncated,
       };
     }
     parsedValue = parseFloat(trimmed);
@@ -36,22 +50,39 @@ export function provideInput(
     parsedValue = raw;
   }
 
-  const currNode = program.nodes[nodeId];
-  if (!currNode || currNode.kind !== "input") {
-    return state;
-  }
-
+  const variables = { ...state.variables, [varName]: parsedValue };
   const echoLine: TerminalLine = { kind: "echo", text: raw };
 
+  // More names left in this block: ask for the next one, stay paused.
+  if (index + 1 < total) {
+    const nextName = currNode.varNames[index + 1];
+    const nextPrompt: TerminalLine = {
+      kind: "prompt",
+      varName: nextName,
+      valueType: type,
+    };
+    const { lines, truncated } = appendTerminal(
+      state.terminal,
+      echoLine,
+      nextPrompt
+    );
+    return {
+      ...state,
+      variables,
+      terminal: lines,
+      terminalTruncated: state.terminalTruncated || truncated,
+      pendingInput: { nodeId, varName: nextName, type, index: index + 1, total },
+    };
+  }
+
+  const { lines, truncated } = appendTerminal(state.terminal, echoLine);
   return {
     ...state,
     status: "running",
     pendingInput: null,
-    variables: {
-      ...state.variables,
-      [varName]: parsedValue,
-    },
-    terminal: [...state.terminal, echoLine],
+    variables,
+    terminal: lines,
+    terminalTruncated: state.terminalTruncated || truncated,
     currentNodeId: currNode.next,
     lastEdgeId: currNode.nextEdgeId,
   };

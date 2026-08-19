@@ -21,7 +21,15 @@ export type RunState = {
   lastEdgeId: EdgeId | null;
   variables: Readonly<Record<string, Value>>;
   terminal: readonly TerminalLine[];
-  pendingInput: { nodeId: NodeId; varName: string; type: InputValueType } | null;
+  pendingInput: {
+    nodeId: NodeId;
+    /** The name being asked for right now. */
+    varName: string;
+    type: InputValueType;
+    /** Position within this block's name list, and how many there are. */
+    index: number;
+    total: number;
+  } | null;
   error: RunError | null;
   stepCount: number;
   recentNodeIds: readonly NodeId[];

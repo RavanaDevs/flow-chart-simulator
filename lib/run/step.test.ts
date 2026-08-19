@@ -105,6 +105,86 @@ describe("Interpreter & Step Engine", () => {
     }
   });
 
+  it("concatenates a comma-separated Output block", () => {
+    const cRes = compile(FIXTURES.greeting);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["Nimal"]);
+    expect(endState.status).toBe("finished");
+
+    const outputs = endState.terminal.filter((l) => l.kind === "output");
+    expect(outputs).toEqual([{ kind: "output", text: "Hello, Nimal!" }]);
+  });
+
+  it("asks for each name in a multi-variable Input block in turn", () => {
+    const cRes = compile(FIXTURES.multiInput);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["1", "2", "3"]);
+    expect(endState.status).toBe("finished");
+    expect(endState.variables).toMatchObject({ a: 1, b: 2, c: 3 });
+
+    const prompts = endState.terminal.filter((l) => l.kind === "prompt");
+    expect(prompts.map((p) => (p.kind === "prompt" ? p.varName : ""))).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+
+    const outputs = endState.terminal.filter((l) => l.kind === "output");
+    expect(outputs).toEqual([{ kind: "output", text: "sum=6" }]);
+  });
+
+  it("re-asks for the SAME name when a value in a list is not a number", () => {
+    const cRes = compile(FIXTURES.multiInput);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (state.status !== "awaiting-input") {
+      state = step(cRes.program, state);
+    }
+    expect(state.pendingInput?.varName).toBe("a");
+
+    state = provideInput(cRes.program, state, "1");
+    expect(state.pendingInput?.varName).toBe("b");
+
+    // A typo must not skip ahead to "c" or assign anything.
+    state = provideInput(cRes.program, state, "oops");
+    expect(state.status).toBe("awaiting-input");
+    expect(state.pendingInput?.varName).toBe("b");
+    expect(state.pendingInput?.index).toBe(1);
+    expect(state.variables.b).toBeUndefined();
+
+    state = provideInput(cRes.program, state, "2");
+    expect(state.pendingInput?.varName).toBe("c");
+    expect(state.variables.b).toBe(2);
+  });
+
+  it("lights the Stop block and stops the path animation on finish", () => {
+    const cRes = compile(FIXTURES.hello);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("finished");
+    // The Stop block stays current so it can be highlighted...
+    expect(endState.currentNodeId).toBe("3");
+    // ...and no edge is left travelling, so nothing animates after the end.
+    expect(endState.lastEdgeId).toBeNull();
+  });
+
+  it("holds the failing block and stops the path animation on error", () => {
+    const cRes = compile(FIXTURES.divideByZero);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["0"]);
+    expect(endState.status).toBe("error");
+    expect(endState.error?.code).toBe("DIVIDE_BY_ZERO");
+    expect(endState.currentNodeId).toBe("3");
+    expect(endState.lastEdgeId).toBeNull();
+  });
+
   it("Property: Determinism", () => {
     const cRes = compile(FIXTURES.sum1To10);
     if (!cRes.ok) return;
@@ -124,6 +204,50 @@ describe("Interpreter & Step Engine", () => {
 
     const steppedAgain = step(cRes.program, endState);
     expect(steppedAgain).toBe(endState); // Exact reference equality
+  });
+
+  it("holds the terminal at its cap without flooding it with notices", () => {
+    const cRes = compile(FIXTURES.printLoop);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    for (let i = 0; i < 9000; i++) {
+      state = step(cRes.program, state);
+    }
+
+    // The log is capped, not merely trimmed-and-regrown.
+    expect(state.terminal.length).toBeLessThanOrEqual(2000);
+    expect(state.terminalTruncated).toBe(true);
+
+    // The truncation notice is a flag, never a line in the log.
+    const notices = state.terminal.filter(
+      (l) => l.kind === "system" && l.code === "OUTPUT_TRUNCATED"
+    );
+    expect(notices).toHaveLength(0);
+  });
+
+  it("Property: step() never mutates the state it is given", () => {
+    const cRes = compile(FIXTURES.sum1To10);
+    if (!cRes.ok) return;
+
+    const deepFreeze = (value: unknown): void => {
+      if (value && typeof value === "object" && !Object.isFrozen(value)) {
+        Object.freeze(value);
+        Object.values(value).forEach(deepFreeze);
+      }
+    };
+
+    let state = initialState();
+    // Runs in strict mode, so any in-place push/assign throws instead of
+    // silently succeeding.
+    for (let i = 0; i < 200 && state.status !== "finished"; i++) {
+      deepFreeze(state);
+      state = step(cRes.program, state);
+    }
+
+    expect(state.status).toBe("finished");
+    expect(state.variables.sum).toBe(55);
   });
 
   it("Property: awaiting-input is a hard stop", () => {

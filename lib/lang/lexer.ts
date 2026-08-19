@@ -91,6 +91,14 @@ export function tokenize(src: string): LexResult {
       i++;
       continue;
     }
+    // Separates items in an input block's name list and an output block's
+    // value list. The expression grammar never accepts one, so a stray comma
+    // inside a formula still fails as trailing input.
+    if (char === ",") {
+      tokens.push({ kind: "COMMA", text: ",", start, end: i + 1 });
+      i++;
+      continue;
+    }
 
     // String literal
     if (char === '"') {

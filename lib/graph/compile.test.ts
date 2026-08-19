@@ -22,9 +22,9 @@ describe("compile", () => {
         { id: "4", kind: "stop", position: { x: 0, y: 300 }, data: {} },
       ],
       edges: [
-        { id: "e1", source: "1", target: "2", sourceHandle: null },
-        { id: "e2", source: "2", target: "3", sourceHandle: null },
-        { id: "e3", source: "3", target: "4", sourceHandle: null },
+        { id: "e1", source: "1", target: "2", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e2", source: "2", target: "3", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e3", source: "3", target: "4", sourceHandle: "port-bottom", targetHandle: null },
       ],
     };
 
@@ -59,7 +59,7 @@ describe("compile", () => {
           data: { source: "x = 5" },
         },
       ],
-      edges: [{ id: "e1", source: "1", target: "2", sourceHandle: null }],
+      edges: [{ id: "e1", source: "1", target: "2", sourceHandle: "port-bottom", targetHandle: null }],
     };
     const res = compile(graph);
     expect(res.ok).toBe(false);
@@ -82,8 +82,8 @@ describe("compile", () => {
         { id: "3", kind: "stop", position: { x: 0, y: 200 }, data: {} },
       ],
       edges: [
-        { id: "e1", source: "1", target: "2", sourceHandle: null },
-        { id: "e2", source: "2", target: "3", sourceHandle: "true" },
+        { id: "e1", source: "1", target: "2", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e2", source: "2", target: "3", sourceHandle: "true-bottom", targetHandle: null },
       ],
     };
     const res = compile(graph);
@@ -106,7 +106,7 @@ describe("compile", () => {
           data: { source: "y = 99" },
         },
       ],
-      edges: [{ id: "e1", source: "1", target: "2", sourceHandle: null }],
+      edges: [{ id: "e1", source: "1", target: "2", sourceHandle: "port-bottom", targetHandle: null }],
     };
     const res = compile(graph);
     expect(res.ok).toBe(true);
@@ -117,5 +117,74 @@ describe("compile", () => {
     expect(warn).toBeDefined();
     expect(warn?.nodeId).toBe("orphan");
     expect(res.program.nodes["orphan"]).toBeUndefined();
+  });
+
+  it("treats both false ports as one branch, not two exits", () => {
+    const graph: FlowGraph = {
+      nodes: [
+        { id: "s", kind: "start", position: { x: 0, y: 0 }, data: {} },
+        {
+          id: "d",
+          kind: "if",
+          position: { x: 0, y: 1 },
+          data: { source: "true" },
+        },
+        { id: "a", kind: "stop", position: { x: 0, y: 2 }, data: {} },
+        { id: "b", kind: "stop", position: { x: 1, y: 2 }, data: {} },
+        { id: "c", kind: "stop", position: { x: 2, y: 2 }, data: {} },
+      ],
+      edges: [
+        { id: "e1", source: "s", target: "d", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e2", source: "d", target: "a", sourceHandle: "true-bottom", targetHandle: null },
+        { id: "e3", source: "d", target: "b", sourceHandle: "false-left", targetHandle: null },
+        { id: "e4", source: "d", target: "c", sourceHandle: "false-right", targetHandle: null },
+      ],
+    };
+
+    const res = compile(graph);
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(
+      res.diagnostics.some((d) => d.code === "MULTIPLE_OUTGOING_EDGES")
+    ).toBe(true);
+  });
+
+  it("rejects an arrow pointing into Start", () => {
+    const graph: FlowGraph = {
+      nodes: [
+        { id: "s", kind: "start", position: { x: 0, y: 0 }, data: {} },
+        { id: "p", kind: "process", position: { x: 0, y: 1 }, data: { source: "x = 1" } },
+        { id: "e", kind: "stop", position: { x: 0, y: 2 }, data: {} },
+      ],
+      edges: [
+        { id: "e1", source: "s", target: "p", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e2", source: "p", target: "e", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e3", source: "p", target: "s", sourceHandle: "port-left", targetHandle: null },
+      ],
+    };
+
+    const res = compile(graph);
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.diagnostics.some((d) => d.code === "START_HAS_INBOUND")).toBe(true);
+  });
+
+  it("rejects an arrow leading out of Stop", () => {
+    const graph: FlowGraph = {
+      nodes: [
+        { id: "s", kind: "start", position: { x: 0, y: 0 }, data: {} },
+        { id: "e", kind: "stop", position: { x: 0, y: 1 }, data: {} },
+        { id: "p", kind: "process", position: { x: 0, y: 2 }, data: { source: "x = 1" } },
+      ],
+      edges: [
+        { id: "e1", source: "s", target: "e", sourceHandle: "port-bottom", targetHandle: null },
+        { id: "e2", source: "e", target: "p", sourceHandle: "port-bottom", targetHandle: null },
+      ],
+    };
+
+    const res = compile(graph);
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.diagnostics.some((d) => d.code === "STOP_HAS_OUTGOING")).toBe(true);
   });
 });

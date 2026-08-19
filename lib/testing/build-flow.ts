@@ -20,8 +20,9 @@ export class FlowBuilder {
     return this;
   }
 
-  public input(id: string, varName: string, valueType: InputValueType = "number"): this {
-    this.nodes.push({ id, kind: "input", position: { x: 0, y: 0 }, data: { varName, valueType } });
+  /** `names` may be a comma-separated list, e.g. "age, score". */
+  public input(id: string, names: string, valueType: InputValueType = "number"): this {
+    this.nodes.push({ id, kind: "input", position: { x: 0, y: 0 }, data: { names, valueType } });
     return this;
   }
 
@@ -35,12 +36,29 @@ export class FlowBuilder {
     return this;
   }
 
-  public connect(source: string, target: string, sourceHandle: "true" | "false" | null = null): this {
+  /**
+   * `branch` is the shorthand fixtures use; it is translated to the physical
+   * port a student would have dragged from.
+   */
+  public connect(
+    source: string,
+    target: string,
+    branch: "true" | "false" | null = null,
+    targetHandle: string = "port-top"
+  ): this {
+    const sourceHandle =
+      branch === "true"
+        ? "true-bottom"
+        : branch === "false"
+          ? "false-right"
+          : "port-bottom";
+
     this.edges.push({
       id: `e${this.edgeCounter++}`,
       source,
       target,
       sourceHandle,
+      targetHandle,
     });
     return this;
   }

@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { parseExpression, parseProcess, parseIdentifier } from "./parser";
+import {
+  parseExpression,
+  parseProcess,
+  parseIdentifier,
+  parseOutputList,
+  parseIdentifierList,
+} from "./parser";
 
 describe("parseExpression", () => {
   it("parses precedence correctly (2 + 3 * 4)", () => {
@@ -75,5 +81,72 @@ describe("parseIdentifier", () => {
     expect(res.ok).toBe(false);
     if (res.ok) return;
     expect(res.error.code).toBe("PARSE_TRAILING_INPUT");
+  });
+});
+
+describe("parseOutputList", () => {
+  it("parses a single value", () => {
+    const res = parseOutputList("total");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.exprs).toHaveLength(1);
+  });
+
+  it("parses text and variables mixed", () => {
+    const res = parseOutputList(`"Total: ", total, "!"`);
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.exprs).toHaveLength(3);
+      expect(res.exprs[0].kind).toBe("string");
+      expect(res.exprs[1].kind).toBe("variable");
+    }
+  });
+
+  it("rejects a trailing comma", () => {
+    const res = parseOutputList("a, b,");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("PARSE_TRAILING_COMMA");
+  });
+
+  it("rejects two commas in a row", () => {
+    const res = parseOutputList("a,, b");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("PARSE_EMPTY_LIST_ITEM");
+  });
+
+  it("rejects an empty block", () => {
+    const res = parseOutputList("   ");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("OUTPUT_EMPTY");
+  });
+});
+
+describe("parseIdentifierList", () => {
+  it("parses several names", () => {
+    const res = parseIdentifierList("age, score , name");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.names).toEqual(["age", "score", "name"]);
+  });
+
+  it("rejects a reserved word", () => {
+    const res = parseIdentifierList("age, AND");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("PROCESS_ASSIGN_TO_RESERVED");
+  });
+
+  it("rejects a trailing comma", () => {
+    const res = parseIdentifierList("age,");
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("PARSE_TRAILING_COMMA");
+  });
+});
+
+describe("missing block text", () => {
+  it("reports a parse error instead of throwing when a block has no text", () => {
+    const missing = undefined as unknown as string;
+    expect(() => parseExpression(missing)).not.toThrow();
+    expect(() => parseProcess(missing)).not.toThrow();
+    expect(() => parseOutputList(missing)).not.toThrow();
+    expect(() => parseIdentifierList(missing)).not.toThrow();
+    expect(parseOutputList(missing).ok).toBe(false);
   });
 });

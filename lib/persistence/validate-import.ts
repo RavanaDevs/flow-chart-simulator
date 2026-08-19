@@ -1,5 +1,6 @@
-import { FlowDocument } from "./document";
+import { FlowDocument, DOCUMENT_VERSION } from "./document";
 import { FlowNode, FlowEdge, NodeKind } from "../graph/types";
+import { migrateEdge, migrateNodeData } from "./migrate";
 
 const VALID_KINDS: Set<NodeKind> = new Set([
   "start",
@@ -19,8 +20,14 @@ export function validateImport(
 
   const record = obj as Record<string, unknown>;
 
-  if (record.version !== 1) {
-    return { ok: false, error: "Unsupported document version. Expected version 1." };
+  // Older documents are migrated on read; newer ones cannot be understood by
+  // this build and must be refused rather than half-loaded.
+  const version = typeof record.version === "number" ? record.version : 0;
+  if (version < 1 || version > DOCUMENT_VERSION) {
+    return {
+      ok: false,
+      error: `Unsupported document version ${String(record.version)}. This app understands versions 1 to ${DOCUMENT_VERSION}.`,
+    };
   }
 
   if (!Array.isArray(record.nodes)) {
@@ -52,6 +59,11 @@ export function validateImport(
     ) {
       return { ok: false, error: `Node ${nodeObj.id} missing valid position.` };
     }
+    const data = migrateNodeData(
+      nodeObj.kind as NodeKind,
+      (nodeObj.data as Record<string, unknown>) ?? {}
+    );
+
     nodes.push({
       id: nodeObj.id as string,
       kind: nodeObj.kind as NodeKind,
@@ -59,7 +71,7 @@ export function validateImport(
         x: (nodeObj.position as { x: number }).x,
         y: (nodeObj.position as { y: number }).y,
       },
-      data: (nodeObj.data as Record<string, unknown>) ?? {},
+      data,
     } as FlowNode);
   }
 
@@ -73,23 +85,21 @@ export function validateImport(
     if (typeof edgeObj.id !== "string" || typeof edgeObj.source !== "string" || typeof edgeObj.target !== "string") {
       return { ok: false, error: `Edge at index ${i} missing id, source, or target.` };
     }
-    const sourceHandle =
-      edgeObj.sourceHandle === "true" || edgeObj.sourceHandle === "false"
-        ? edgeObj.sourceHandle
-        : null;
+    const { sourceHandle, targetHandle } = migrateEdge(edgeObj);
 
     edges.push({
       id: edgeObj.id,
       source: edgeObj.source,
       target: edgeObj.target,
       sourceHandle,
+      targetHandle,
     });
   }
 
   return {
     ok: true,
     doc: {
-      version: 1,
+      version: DOCUMENT_VERSION,
       nodes,
       edges,
     },

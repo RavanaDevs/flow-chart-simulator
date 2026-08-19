@@ -1,8 +1,10 @@
 import { FlowNode, FlowEdge } from "../graph/types";
 import { validateImport } from "./validate-import";
 
+export const DOCUMENT_VERSION = 2;
+
 export type FlowDocument = {
-  version: 1;
+  version: number;
   nodes: FlowNode[];
   edges: FlowEdge[];
 };
@@ -21,10 +23,11 @@ export function exportDocument(nodes: FlowNode[], edges: FlowEdge[]): string {
     source: e.source,
     target: e.target,
     sourceHandle: e.sourceHandle ?? null,
+    targetHandle: e.targetHandle ?? null,
   }));
 
   const doc: FlowDocument = {
-    version: 1,
+    version: DOCUMENT_VERSION,
     nodes: cleanNodes,
     edges: cleanEdges,
   };

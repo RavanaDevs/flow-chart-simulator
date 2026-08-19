@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { FlowNode, FlowEdge, NodeId, EdgeId, NodeKind } from "@/lib/graph/types";
+import { snapPosition } from "@/lib/graph/grid";
+import { branchOf } from "@/lib/graph/handles";
 
 export type GraphState = {
   nodes: FlowNode[];
@@ -12,7 +14,12 @@ export type GraphState = {
   removeNode: (id: NodeId) => void;
   moveNode: (id: NodeId, position: { x: number; y: number }) => void;
   updateNodeData: (id: NodeId, patch: Record<string, unknown>) => void;
-  connect: (source: NodeId, target: NodeId, sourceHandle?: "true" | "false" | null) => void;
+  connect: (
+    source: NodeId,
+    target: NodeId,
+    sourceHandle?: string | null,
+    targetHandle?: string | null
+  ) => void;
   removeEdge: (id: EdgeId) => void;
   loadDocument: (nodes: FlowNode[], edges: FlowEdge[]) => void;
   resetGraph: () => void;
@@ -21,7 +28,7 @@ export type GraphState = {
 const DEFAULT_START_NODE: FlowNode = {
   id: "start-node-1",
   kind: "start",
-  position: { x: 250, y: 50 },
+  position: { x: 240, y: 48 },
   data: {},
 };
 
@@ -42,7 +49,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     let data: FlowNode["data"] = {} as FlowNode["data"];
 
     if (kind === "input") {
-      data = { varName: "x", valueType: "number", ...initialData };
+      data = { names: "x", valueType: "number", ...initialData };
     } else if (kind === "output") {
       data = { source: `"Hello"`, ...initialData };
     } else if (kind === "process") {
@@ -54,7 +61,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     const newNode: FlowNode = {
       id: newId,
       kind,
-      position,
+      position: snapPosition(position),
       data,
     } as FlowNode;
 
@@ -77,8 +84,11 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   },
 
   moveNode: (id, position) => {
+    const snapped = snapPosition(position);
     set((state) => ({
-      nodes: state.nodes.map((n) => (n.id === id ? { ...n, position } : n)),
+      nodes: state.nodes.map((n) =>
+        n.id === id ? { ...n, position: snapped } : n
+      ),
     }));
   },
 
@@ -96,13 +106,16 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     }));
   },
 
-  connect: (source, target, sourceHandle = null) => {
+  connect: (source, target, sourceHandle = null, targetHandle = null) => {
     if (source === target) return; // Prevent self-loop
 
     const edges = get().edges;
-    // Check if source handle already has an edge
+    // At most one outgoing edge per logical branch. Checked on the branch, not
+    // the port, so two different physical ports cannot feed the same branch.
     const existing = edges.find(
-      (e) => e.source === source && e.sourceHandle === sourceHandle
+      (e) =>
+        e.source === source &&
+        branchOf(e.sourceHandle) === branchOf(sourceHandle)
     );
     if (existing) {
       return;
@@ -114,6 +127,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       source,
       target,
       sourceHandle: sourceHandle ?? null,
+      targetHandle: targetHandle ?? null,
     };
 
     set((state) => ({

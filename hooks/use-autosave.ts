@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useGraphStore } from "@/stores/graph-store";
 import { exportDocument, importDocument } from "@/lib/persistence/document";
 
-const AUTOSAVE_KEY = "flowchart-sim:doc:v1";
+export const AUTOSAVE_KEY = "flowchart-sim:doc:v1";
 
 export function useAutosave() {
   const { nodes, edges, loadDocument } = useGraphStore();

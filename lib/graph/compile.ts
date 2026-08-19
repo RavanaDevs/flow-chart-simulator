@@ -1,8 +1,14 @@
 import { FlowGraph, FlowNode, FlowEdge, NodeId } from "./types";
 import { Program, CompiledNode, CompileResult } from "./program";
 import { Diagnostic } from "../errors/diagnostic";
+import { branchOf } from "./handles";
 import { Expr } from "../lang/ast";
-import { parseExpression, parseProcess, parseIdentifier } from "../lang/parser";
+import {
+  parseExpression,
+  parseProcess,
+  parseIdentifierList,
+  parseOutputList,
+} from "../lang/parser";
 
 export function compile(graph: FlowGraph): CompileResult {
   const diagnostics: Diagnostic[] = [];
@@ -32,6 +38,31 @@ export function compile(graph: FlowGraph): CompileResult {
   }
 
   const startNode = startNodes[0];
+
+  // Until every block had ports on all four sides these two were structurally
+  // impossible, so nothing checked them. They are reachable now — including
+  // through an imported file — and step() relies on them holding.
+  for (const edge of graph.edges) {
+    if (edge.target === startNode.id) {
+      addDiag({
+        code: "START_HAS_INBOUND",
+        params: {},
+        severity: "error",
+        nodeId: startNode.id,
+        edgeId: edge.id,
+      });
+    }
+    const sourceNode = graph.nodes.find((n) => n.id === edge.source);
+    if (sourceNode?.kind === "stop") {
+      addDiag({
+        code: "STOP_HAS_OUTGOING",
+        params: {},
+        severity: "error",
+        nodeId: sourceNode.id,
+        edgeId: edge.id,
+      });
+    }
+  }
 
   // Map edges by source
   const edgesBySource = new Map<NodeId, FlowEdge[]>();
@@ -88,8 +119,8 @@ export function compile(graph: FlowGraph): CompileResult {
     NodeId,
     | { kind: "start" }
     | { kind: "stop" }
-    | { kind: "input"; varName: string }
-    | { kind: "output"; expr: Expr }
+    | { kind: "input"; varNames: string[] }
+    | { kind: "output"; exprs: Expr[] }
     | { kind: "process"; target: string; expr: Expr }
     | { kind: "if"; cond: Expr }
   >();
@@ -113,18 +144,36 @@ export function compile(graph: FlowGraph): CompileResult {
     } else if (node.kind === "stop") {
       parsedData.set(node.id, { kind: "stop" });
     } else if (node.kind === "input") {
-      const pRes = parseIdentifier(node.data.varName);
+      const pRes = parseIdentifierList(node.data.names);
       if (!pRes.ok) {
         addDiag({ ...pRes.error, severity: "error", nodeId: node.id });
       } else {
-        parsedData.set(node.id, { kind: "input", varName: pRes.name });
+        const seen = new Set<string>();
+        let duplicated = false;
+        for (let i = 0; i < pRes.names.length; i++) {
+          const name = pRes.names[i];
+          if (seen.has(name)) {
+            duplicated = true;
+            addDiag({
+              code: "DUPLICATE_INPUT_NAME",
+              params: { name },
+              severity: "error",
+              nodeId: node.id,
+              span: pRes.spans[i],
+            });
+          }
+          seen.add(name);
+        }
+        if (!duplicated) {
+          parsedData.set(node.id, { kind: "input", varNames: pRes.names });
+        }
       }
     } else if (node.kind === "output") {
-      const pRes = parseExpression(node.data.source);
+      const pRes = parseOutputList(node.data.source);
       if (!pRes.ok) {
         addDiag({ ...pRes.error, severity: "error", nodeId: node.id });
       } else {
-        parsedData.set(node.id, { kind: "output", expr: pRes.expr });
+        parsedData.set(node.id, { kind: "output", exprs: pRes.exprs });
       }
     } else if (node.kind === "process") {
       const pRes = parseProcess(node.data.source);
@@ -154,8 +203,13 @@ export function compile(graph: FlowGraph): CompileResult {
     }
 
     if (node.kind === "if") {
-      const trueEdges = outgoing.filter((e) => e.sourceHandle === "true");
-      const falseEdges = outgoing.filter((e) => e.sourceHandle === "false");
+      // Grouped by logical branch, not by port: false-left and false-right
+      // both feed "false", so connecting both is a conflict rather than a
+      // silently nondeterministic flowchart.
+      const trueEdges = outgoing.filter((e) => branchOf(e.sourceHandle) === "true");
+      const falseEdges = outgoing.filter(
+        (e) => branchOf(e.sourceHandle) === "false"
+      );
 
       if (trueEdges.length === 0) {
         addDiag({
@@ -283,7 +337,7 @@ export function compile(graph: FlowGraph): CompileResult {
 
       const outVars = new Set(inVars);
       if (data?.kind === "input") {
-        outVars.add(data.varName);
+        for (const name of data.varNames) outVars.add(name);
       } else if (data?.kind === "process") {
         outVars.add(data.target);
       }
@@ -350,8 +404,10 @@ export function compile(graph: FlowGraph): CompileResult {
     }
 
     const exprsToTest: Expr[] = [];
-    if (data.kind === "process" || data.kind === "output") {
+    if (data.kind === "process") {
       exprsToTest.push(data.expr);
+    } else if (data.kind === "output") {
+      exprsToTest.push(...data.exprs);
     } else if (data.kind === "if") {
       exprsToTest.push(data.cond);
     }
@@ -406,7 +462,7 @@ export function compile(graph: FlowGraph): CompileResult {
       compiledNodes[nodeId] = {
         kind: "input",
         id: nodeId,
-        varName: (data as { varName: string }).varName,
+        varNames: (data as { varNames: string[] }).varNames,
         valueType: inputNode.data.valueType,
         next: links!.next!.targetId,
         nextEdgeId: links!.next!.edgeId,
@@ -415,7 +471,7 @@ export function compile(graph: FlowGraph): CompileResult {
       compiledNodes[nodeId] = {
         kind: "output",
         id: nodeId,
-        expr: (data as { expr: Expr }).expr,
+        exprs: (data as { exprs: Expr[] }).exprs,
         next: links!.next!.targetId,
         nextEdgeId: links!.next!.edgeId,
       };

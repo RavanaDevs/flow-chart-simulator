@@ -138,6 +138,19 @@
   }
 }
 
+@keyframes node-settle {
+  from {
+    stroke-width: 7;
+  }
+  to {
+    stroke-width: 3;
+  }
+}
+
+.animate-node-settle {
+  animation: node-settle 450ms ease-out;
+}
+
 .animate-marching-ants {
   animation: marching-ants 1s linear infinite;
 }

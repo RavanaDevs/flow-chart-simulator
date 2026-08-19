@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useGraphStore } from "@/stores/graph-store";
 import { useRunStore } from "@/stores/run-store";
@@ -12,7 +12,19 @@ import {
   Upload,
   Focus,
   Gauge,
+  FilePlus2,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { AUTOSAVE_KEY } from "@/hooks/use-autosave";
 import { toast } from "sonner";
 import { exportDocument, importDocument } from "@/lib/persistence/document";
 
@@ -29,7 +41,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   followNode,
   setFollowNode,
 }) => {
-  const { nodes, edges, loadDocument } = useGraphStore();
+  const { nodes, edges, loadDocument, resetGraph } = useGraphStore();
+  const [confirmNewOpen, setConfirmNewOpen] = useState(false);
   const { state, history, loadProgram, tick, stepBack, resetRun } = useRunStore();
 
   const handleRun = () => {
@@ -82,6 +95,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       toast.success("Flowchart imported successfully.");
     };
     reader.readAsText(file);
+  };
+
+  // Clearing the canvas must also drop the compiled Program and the autosave
+  // slot, or a mid-run reset would keep executing a chart that no longer
+  // exists and a reload would resurrect what the student just cleared.
+  const handleNew = () => {
+    resetGraph();
+    resetRun();
+    try {
+      localStorage.removeItem(AUTOSAVE_KEY);
+    } catch {
+      // private-mode or quota failures are not worth blocking the reset over
+    }
+    setConfirmNewOpen(false);
+    toast.success("Canvas cleared. A fresh Start block is ready.");
   };
 
   const isRunning = state.status === "running";
@@ -145,7 +173,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <option value={800}>Slow (800ms)</option>
             <option value={400}>Normal (400ms)</option>
             <option value={150}>Fast (150ms)</option>
-            <option value={20}>Instant</option>
+            <option value={0}>Instant</option>
           </select>
         </div>
 
@@ -162,6 +190,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
         {/* Persistence Actions */}
         <div className="flex items-center gap-1.5 border-l border-border pl-3">
+          <Dialog open={confirmNewOpen} onOpenChange={setConfirmNewOpen}>
+            <DialogTrigger
+              render={
+                <Button size="sm" variant="outline" title="Clear the canvas" />
+              }
+            >
+              <FilePlus2 className="mr-1.5 h-3.5 w-3.5" />
+              New
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Clear the canvas?</DialogTitle>
+                <DialogDescription>
+                  This deletes every block and arrow in this flowchart, and
+                  removes the saved copy in this browser. You will get a fresh
+                  Start block. This cannot be undone — export first if you want
+                  to keep it.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose render={<Button variant="outline" />}>
+                  Cancel
+                </DialogClose>
+                <Button variant="destructive" onClick={handleNew}>
+                  Clear everything
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <Button size="sm" variant="outline" onClick={handleExport}>
             <Download className="mr-1.5 h-3.5 w-3.5" />
             Export

@@ -3,6 +3,7 @@ import { NodeKind } from "@/lib/graph/types";
 import { useGraphStore } from "@/stores/graph-store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork } from "lucide-react";
 
 type PaletteItem = {
@@ -60,7 +61,8 @@ export const Palette: React.FC = () => {
     e.dataTransfer.effectAllowed = "move";
   };
 
-  const handleClickAdd = (kind: NodeKind) => {
+  const handleClickAdd = (kind: NodeKind, disabled: boolean) => {
+    if (disabled) return;
     // Find position near selected node or default offset
     const selectedNode = nodes.find((n) => n.id === selectedId);
     const basePos = selectedNode ? selectedNode.position : { x: 250, y: 150 };
@@ -78,19 +80,36 @@ export const Palette: React.FC = () => {
       </CardHeader>
       <CardContent className="p-3 space-y-2 overflow-y-auto">
         {ITEMS.map((item) => {
-          if (item.kind === "start" && hasStart) {
-            return null; // Hide start block from palette if canvas already has one
-          }
+          // A flowchart has exactly one Start. Grey the item out rather than
+          // removing it, so the block is still discoverable and the reason it
+          // is unavailable is visible.
+          const disabled = item.kind === "start" && hasStart;
 
           return (
             <div
               key={item.kind}
-              draggable
+              draggable={!disabled}
               onDragStart={(e) => handleDragStart(e, item.kind)}
-              onClick={() => handleClickAdd(item.kind)}
-              className="group flex cursor-grab items-center gap-3 rounded-lg border border-border bg-card p-2.5 shadow-sm transition-all hover:border-primary hover:bg-accent hover:shadow"
+              onClick={() => handleClickAdd(item.kind, disabled)}
+              aria-disabled={disabled}
+              title={
+                disabled
+                  ? "Your flowchart already has a Start block"
+                  : undefined
+              }
+              className={cn(
+                "group flex items-center gap-3 rounded-lg border border-border bg-card p-2.5 shadow-sm transition-all",
+                disabled
+                  ? "cursor-not-allowed opacity-45"
+                  : "cursor-grab hover:border-primary hover:bg-accent hover:shadow"
+              )}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background border border-border group-hover:border-primary">
+              <div
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background",
+                  !disabled && "group-hover:border-primary"
+                )}
+              >
                 {item.icon}
               </div>
               <div className="flex flex-col">
@@ -98,7 +117,7 @@ export const Palette: React.FC = () => {
                   {item.label}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  {item.description}
+                  {disabled ? "Already on the canvas" : item.description}
                 </span>
               </div>
             </div>

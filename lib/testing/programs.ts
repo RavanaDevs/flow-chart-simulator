@@ -44,6 +44,41 @@ export const FIXTURES: Record<string, FlowGraph> = {
     .connect("3", "6", "false")
     .build(),
 
+  // Comma-separated output: text and variables concatenated.
+  greeting: flow()
+    .start("1")
+    .input("2", "name", "text")
+    .output("3", `"Hello, ", name, "!"`)
+    .stop("4")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "4")
+    .build(),
+
+  // One input block that asks for three values in turn.
+  multiInput: flow()
+    .start("1")
+    .input("2", "a, b, c", "number")
+    .output("3", `"sum=", a + b + c`)
+    .stop("4")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "4")
+    .build(),
+
+  // Prints on every iteration and never stops. Used to exercise the terminal
+  // line cap and the step budget together.
+  printLoop: flow()
+    .start("1")
+    .output("2", `"line"`)
+    .ifNode("3", "true")
+    .stop("4")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "2", "true")
+    .connect("3", "4", "false")
+    .build(),
+
   divideByZero: flow()
     .start("1")
     .input("2", "n", "number")
