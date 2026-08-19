@@ -1,7 +1,6 @@
 import React from "react";
 import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
-import { NodePorts } from "./node-ports";
 import { ExpressionField } from "./expression-field";
 import { useGraphStore } from "@/stores/graph-store";
 
@@ -12,7 +11,6 @@ export const OutputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
 
   return (
     <NodeFrame id={id} kind="output" isSelected={selected}>
-      <NodePorts kind="output" />
       <div className="flex flex-col items-center gap-1">
         <span className="text-[10px] uppercase font-bold text-muted-foreground">
           Output

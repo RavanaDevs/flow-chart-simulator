@@ -2,6 +2,7 @@ import React from "react";
 import { NodeKind } from "@/lib/graph/types";
 import { getShapeGeometry } from "../shapes/geometry";
 import { ShapeSvg, RunPhase } from "../shapes/shape-svg";
+import { NodePorts } from "./node-ports";
 import { useRunStore } from "@/stores/run-store";
 import { cn } from "@/lib/utils";
 import { AlertCircle, AlertTriangle, Trash2 } from "lucide-react";
@@ -84,6 +85,10 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
           )}
         </div>
       )}
+
+      {/* Connection ports — rendered here rather than by each node so they
+          share the frame's positioning context and its hover group. */}
+      <NodePorts kind={kind} nodeId={id} />
 
       {/* Node Content Container */}
       <div className="relative z-10 flex h-full w-full items-center justify-center p-3 text-center text-xs font-medium">

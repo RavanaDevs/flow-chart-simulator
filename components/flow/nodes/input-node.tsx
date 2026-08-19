@@ -1,7 +1,6 @@
 import React from "react";
 import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
-import { NodePorts } from "./node-ports";
 import { ExpressionField } from "./expression-field";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
@@ -20,7 +19,6 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
 
   return (
     <NodeFrame id={id} kind="input" isSelected={selected}>
-      <NodePorts kind="input" />
       {isAwaiting && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-lg animate-bounce whitespace-nowrap">
           <span>Type in Terminal</span> ↵
