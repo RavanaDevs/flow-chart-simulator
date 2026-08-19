@@ -1,0 +1,243 @@
+{
+  "errors": {
+    "LEX_UNKNOWN_CHARACTER": {
+      "message": "'{char}' යනු නොදන්නා අක්ෂරයකි.",
+      "hint": "ඔබගේ බ්ලොක් එකේ වැරදි හෝ අපේක්ෂිත නොවන සංකේත ඇත්දැයි පරීක්ෂා කරන්න."
+    },
+    "LEX_UNTERMINATED_STRING": {
+      "message": "අවසන් නොකළ පෙළ එකතුවක් (string).",
+      "hint": "ඔබගේ පෙළ එකතුව අවසානයේ උද්ධෘත ලකුණක් (\") ඇති බව තහවුරු කරගන්න."
+    },
+    "PARSE_UNEXPECTED_TOKEN": {
+      "message": "නොසිතූ පෙළ කොටසක් '{found}'.",
+      "hint": "{expected} අපේක්ෂා කෙරේ."
+    },
+    "PARSE_TRAILING_INPUT": {
+      "message": "පේළිය අවසානයේ අමතර පෙළ ඇත: '{extraText}'.",
+      "hint": "අමතර පෙළ ඉවත් කරන්න හෝ සමීකරණය පරීක්ෂා කරන්න."
+    },
+    "PARSE_EXPECTED_IDENTIFIER": {
+      "message": "විචල්‍ය නාමයක් අපේක්ෂා කළ නමුත් හමු වූයේ '{found}'.",
+      "hint": "අකුරකින් ආරම්භ වන නිවැරදි විචල්‍ය නාමයක් භාවිත කරන්න."
+    },
+    "PARSE_EXPECTED_EQUALS": {
+      "message": "විචල්‍ය නාමයට පසුව '=' තිබිය යුතුය.",
+      "hint": "අගයක් පැවරීමට 'විචල්‍යය = ප්‍රකාශනය' යන්න භාවිත කරන්න."
+    },
+    "PROCESS_MISSING_EQUALS": {
+      "message": "ක්‍රියාවලිය බ්ලොක් එකෙහි පිළිතුර විචල්‍යයකට සුරැකිය යුතුය.",
+      "hint": "උදාහරණයක් ලෙස 'x = {src}' ලෙස විචල්‍ය පැවරීමක් එකතු කරන්න."
+    },
+    "PROCESS_ASSIGN_TO_RESERVED": {
+      "message": "'{name}' යනු වෙන්කළ වචනයක් (reserved keyword) බැවින් විචල්‍ය නාමයක් ලෙස භාවිත කළ නොහැක.",
+      "hint": "'my{name}' හෝ 'total' වැනි වෙනත් විචල්‍ය නාමයක් තෝරන්න."
+    },
+    "UNKNOWN_VARIABLE": {
+      "message": "'{name}' විචල්‍යය තවම සාදා නැත.",
+      "hint": "'{name}' භාවිත කිරීමට පෙර එයට අගයක් පවරා ඇති බව තහවුරු කරගන්න."
+    },
+    "UNKNOWN_VARIABLE_DID_YOU_MEAN": {
+      "message": "'{name}' විචල්‍යය තවම සාදා නැත.",
+      "hint": "ඔබ අදහස් කළේ '{suggestion}' ද? භාවිත කිරීමට පෙර එයට අගයක් පවරා ඇති බව තහවුරු කරගන්න."
+    },
+    "DIVIDE_BY_ZERO": {
+      "message": "බිංදුවෙන් බෙදිය නොහැක.",
+      "hint": "'{op}' මෙහෙයුම කිරීමට පෙර බෙදන අගය 0 නොවන බව තහවුරු කරගන්න."
+    },
+    "TYPE_MISMATCH": {
+      "message": "{leftType} සහ {rightType} අතර '{op}' මෙහෙයුම කළ නොහැක.",
+      "hint": "දෙපසම ගැලපෙන දත්ත වර්ග ඇති බව තහවුරු කරගන්න."
+    },
+    "IF_NOT_BOOLEAN": {
+      "message": "තීරණය බ්ලොක් එකේ කොන්දේසිය සත්‍ය/අසත්‍ය (true/false) පිළිතුරක් දිය යුතුය, නමුත් ලැබුණේ {actualType} අගයකි.",
+      "hint": "තීරණය බ්ලොක් එක තුළ '=', '<', හෝ '>' වැනි සංසන්දන මෙහෙයුමක් භාවිත කරන්න."
+    },
+    "STEP_BUDGET_EXCEEDED": {
+      "message": "පියවර {budget} කට පසුව වැඩසටහන නැවතුණි. මෙය අනන්ත චක්‍රයක් (endless loop) විය හැක.",
+      "hint": "මෙම බ්ලොක් වටා ඇති චක්‍රය පරීක්ෂා කරන්න: {cycle}."
+    },
+    "INPUT_NOT_A_NUMBER": {
+      "message": "'{text}' යනු නිවැරදි සංඛ්‍යාවක් නොවේ.",
+      "hint": "කරුණාකර නිවැරදි සංඛ්‍යාත්මක අගයක් ටයිප් කරන්න."
+    },
+    "NO_START": {
+      "message": "ගැලීම් සටහනට ආරම්භය බ්ලොක් එකක් තිබිය යුතුය.",
+      "hint": "ආරම්භ කිරීමට ආරම්භය බ්ලොක් එකක් කැන්වසය වෙත ඇදගෙන එන්න."
+    },
+    "MULTIPLE_START": {
+      "message": "ඔබගේ ගැලීම් සටහනෙහි ආරම්භය බ්ලොක් එකකට වඩා ඇත.",
+      "hint": "ගැලීම් සටහනකට තිබිය හැක්කේ එක් ආරම්භය බ්ලොක් එකක් පමණි. අමතර ආරම්භය බ්ලොක් ඉවත් කරන්න."
+    },
+    "NO_STOP": {
+      "message": "ගැලීම් සටහනෙහි නැවතුම බ්ලොක් එකක් නොමැත.",
+      "hint": "වැඩසටහන අවසන් වන ස්ථානය දැක්වීමට නැවතුම බ්ලොක් එකක් එකතු කරන්න."
+    },
+    "DANGLING_OUTPUT": {
+      "message": "මෙම {nodeKind} බ්ලොක් එක කිසිවකට සම්බන්ධ කර නැත.",
+      "hint": "මෙහි පහළ හැඬලය වෙතින් ඊළඟ බ්ලොක් එකට ඊතලයක් ඇදගෙන යන්න."
+    },
+    "UNCONNECTED_BRANCH": {
+      "message": "මෙම තීරණය බ්ලොක් එකෙහි '{branch}' මාර්ගය සම්බන්ධ කර නැත.",
+      "hint": "'{branch}' හැඬලයේ සිට වෙනත් බ්ලොක් එකකට ඊතලයක් සම්බන්ධ කරන්න."
+    },
+    "UNREACHABLE_NODE": {
+      "message": "මෙම {nodeKind} බ්ලොක් එක වෙත ආරම්භයේ සිට ළඟා විය නොහැක.",
+      "hint": "මෙම බ්ලොක් එක වෙත පැමිණෙන ඊතලයක් සම්බන්ධ කරන්න නැතහොත් මෙය ඉවත් කරන්න."
+    },
+    "NO_REACHABLE_STOP": {
+      "message": "ගැලීම් සටහනෙහි නැවතුම බ්ලොක් එක වෙත යන මාර්ගයක් නොමැත.",
+      "hint": "අවම වශයෙන් එක් මාර්ගයක් හෝ නැවතුම බ්ලොක් එක වෙත ළඟා වන බව තහවුරු කරගන්න."
+    },
+    "VARIABLE_MAYBE_UNASSIGNED": {
+      "message": "'{name}' විචල්‍යයට අගයක් පැවරීමට පෙර භාවිත කර තිබිය හැක.",
+      "hint": "සියලුම ආදාන මාර්ගවලදී '{name}' විචල්‍යයට අගයක් ලැබෙන බව තහවුරු කරගන්න."
+    },
+    "MULTIPLE_OUTGOING_EDGES": {
+      "message": "මෙම බ්ලොක් එකෙහි එකම පිටතට යන ස්ථානයෙන් ඊතල කිහිපයක් සම්බන්ධ කර ඇත.",
+      "hint": "එක් හැඬලයකින් පිටතට යා හැක්කේ එක් ඊතලයක් පමණි."
+    },
+    "PARSE_TRAILING_COMMA": {
+      "message": "කොමාවකට පසුව කිසිවක් නොමැත.",
+      "hint": "අවසාන කොමාව ඉවත් කරන්න, නැතහොත් ඊට පසු අගයක් එකතු කරන්න."
+    },
+    "PARSE_EMPTY_LIST_ITEM": {
+      "message": "ළඟ ළඟ කොමා දෙකක් ඇත — ඒවා අතර යමක් අඩුවී ඇත.",
+      "hint": "කොමා දෙක අතර අගයක් තබන්න, නැතහොත් එකක් ඉවත් කරන්න."
+    },
+    "OUTPUT_EMPTY": {
+      "message": "මෙම ප්‍රතිදානය බ්ලොක් එක හිස්ය.",
+      "hint": "පෙන්වීමට අවශ්‍ය දේ ටයිප් කරන්න, උදා: \"ඔබේ එකතුව: \", total"
+    },
+    "DUPLICATE_INPUT_NAME": {
+      "message": "මෙම ආදානය බ්ලොක් එක '{name}' අගය දෙපාරක් ඉල්ලයි.",
+      "hint": "ආදානය බ්ලොක් එකක ඇති සෑම නමක්ම වෙනස් විය යුතුය."
+    },
+    "START_HAS_INBOUND": {
+      "message": "ආරම්භය බ්ලොක් එක වෙත ඊතලයක් යොමුවී ඇත.",
+      "hint": "ආරම්භය යනු ගැලීම් සටහන පටන් ගන්නා තැනයි, එබැවින් ඊට ඇතුළු වන ඊතල තිබිය නොහැක. එම ඊතලය ඉවත් කරන්න."
+    },
+    "STOP_HAS_OUTGOING": {
+      "message": "නැවතුම බ්ලොක් එකෙන් පිටතට ඊතලයක් යොමුවී ඇත.",
+      "hint": "නැවතුම යනු වැඩසටහන අවසන් වන තැනයි, එබැවින් ඊට පසුව කිසිවක් තිබිය නොහැක. එම ඊතලය ඉවත් කරන්න."
+    },
+    "IMPORT_NOT_AN_OBJECT": {
+      "message": "ගොනුවේ ප්‍රධාන කොටස object එකක් විය යුතුය.",
+      "hint": "ගොනුවේ නිවැරදි JSON ගැලීම් සටහන් ව්‍යුහයක් ඇත්දැයි පරීක්ෂා කරන්න."
+    },
+    "IMPORT_UNSUPPORTED_VERSION": {
+      "message": "සාධාරණ නොවන ලේඛන සංස්කරණය {version}.",
+      "hint": "මෙම යෙදුම සංස්කරණ 1 සිට {maxVersion} දක්වා සහාය දක්වයි."
+    },
+    "IMPORT_BAD_NODES_ARRAY": {
+      "message": "ලේඛනයේ 'nodes' අරාව (array) තිබිය යුතුය.",
+      "hint": "ගැලීම් සටහන් JSON හි බ්ලොක් ලැයිස්තුවක් ඇති බව තහවුරු කරගන්න."
+    },
+    "IMPORT_BAD_EDGES_ARRAY": {
+      "message": "ලේඛනයේ 'edges' අරාව (array) තිබිය යුතුය.",
+      "hint": "ගැලීම් සටහන් JSON හි සම්බන්ධක ඊතල ලැයිස්තුවක් ඇති බව තහවුරු කරගන්න."
+    },
+    "IMPORT_BAD_NODE": {
+      "message": "අනුක්‍රමික අංක {index} හි ඇති බ්ලොක් එක දෝෂ සහිතය.",
+      "hint": "සියලුම බ්ලොක් නිවැරදි ව්‍යුහයකින් යුක්තදැයි පරීක්ෂා කරන්න."
+    },
+    "IMPORT_BAD_NODE_ID": {
+      "message": "අනුක්‍රමික අංක {index} හි ඇති බ්ලොක් එකට නිවැරදි 'id' එකක් නොමැත.",
+      "hint": "සෑම බ්ලොක් එකකටම අනන්‍ය නමක් (id) තිබිය යුතුය."
+    },
+    "IMPORT_UNKNOWN_KIND": {
+      "message": "'{id}' බ්ලොක් එකෙහි නොදන්නා වර්ගයක් '{kind}' ඇත.",
+      "hint": "සහාය දක්වන බ්ලොක් වර්ග: start, stop, input, output, process, if, connector."
+    },
+    "IMPORT_BAD_POSITION": {
+      "message": "'{id}' බ්ලොක් එකට නිවැරදි පිහිටුමක් (position) නොමැත.",
+      "hint": "බ්ලොක් සඳහා x සහ y සංඛ්‍යාත්මක ස්ථාන තිබිය යුතුය."
+    },
+    "IMPORT_BAD_EDGE": {
+      "message": "අනුක්‍රමික අංක {index} හි ඇති ඊතලය දෝෂ සහිතය.",
+      "hint": "සියලුම ඊතල නිවැරදි ව්‍යුහයකින් යුක්තදැයි පරීක්ෂා කරන්න."
+    },
+    "IMPORT_BAD_EDGE_IDS": {
+      "message": "අනුක්‍රමික අංක {index} හි ඇති ඊතලයට id, source, හෝ target අඩුවී ඇත.",
+      "hint": "ඊතල මගින් සම්බන්ධිත බ්ලොක් ID දක්වා තිබිය යුතුය."
+    },
+    "IMPORT_INVALID_JSON": {
+      "message": "අවලංගු ගොනු ආකෘතියකි.",
+      "hint": "ගොනුවේ නිවැරදි JSON අඩංගු බව තහවුරු කරගන්න: {error}"
+    }
+  },
+  "ui": {
+    "toolbar.run": "ධාවනය",
+    "toolbar.step": "පියවර",
+    "toolbar.stepBack": "පසුපසට",
+    "toolbar.reset": "නැවත මුලට",
+    "toolbar.speed": "වේගය",
+    "toolbar.speedSlow": "0.5x (හෙමින්)",
+    "toolbar.speedNormal": "1x (සාමාන්‍ය)",
+    "toolbar.speedFast": "2x (වේගවත්)",
+    "toolbar.speedInstant": "සැණෙකින්",
+    "toolbar.follow": "බ්ලොක් එක හඹා යන්න",
+    "toolbar.new": "නව",
+    "toolbar.export": "අපනයනය",
+    "toolbar.import": "ආනයනය",
+    "toolbar.confirmNewTitle": "කැන්වසය හිස් කරන්නද?",
+    "toolbar.confirmNewDescription": "මෙමගින් සියලුම බ්ලොක් ඉවත් වී වැඩසටහන් ධාවනය නැවත මුලට සැකසේ.",
+    "toolbar.cancel": "අවලංගු කරන්න",
+    "toolbar.confirm": "කැන්වසය හිස් කරන්න",
+    "palette.title": "බ්ලොක් එකතුව",
+    "palette.dragOrClick": "අදින්න හෝ ඔබන්න",
+    "palette.alreadyOnCanvas": "දැනටමත් කැන්වසයේ ඇත",
+    "palette.startDisabledTitle": "ඔබගේ ගැලීම් සටහනෙහි දැනටමත් ආරම්භය බ්ලොක් එකක් ඇත",
+    "palette.block.start": "ආරම්භය",
+    "palette.block.startDesc": "ගැලීම් සටහන ආරම්භ කරයි",
+    "palette.block.stop": "නැවතුම",
+    "palette.block.stopDesc": "ක්‍රියාත්මක වීම අවසන් කරයි",
+    "palette.block.input": "ආදානය",
+    "palette.block.inputDesc": "පරිශීලකයාගෙන් අගයක් ඉල්ලයි",
+    "palette.block.output": "ප්‍රතිදානය",
+    "palette.block.outputDesc": "පණිවිඩයක් හෝ පිළිතුරක් පෙන්වයි",
+    "palette.block.process": "ක්‍රියාවලිය",
+    "palette.block.processDesc": "ගණනය කිරීමක් හෝ විචල්‍යයක් සකසයි (x = 1)",
+    "palette.block.decision": "තීරණය (If)",
+    "palette.block.decisionDesc": "සත්‍ය/අසත්‍ය කොන්දේසිය මත බෙදෙයි",
+    "palette.block.connector": "සම්බන්ධකය",
+    "palette.block.connectorDesc": "මාර්ග කිහිපයක් එකකට එකතු කරයි",
+    "block.start": "ආරම්භය",
+    "block.stop": "නැවතුම",
+    "block.input": "ආදානය",
+    "block.output": "ප්‍රතිදානය",
+    "block.process": "ක්‍රියාවලිය",
+    "block.decision": "තීරණය (If)",
+    "block.connector": "සම්බන්ධකය",
+    "block.typeInTerminal": "ටර්මිනලයේ ටයිප් කරන්න",
+    "block.inputPlaceholder": "නම, නම",
+    "block.outputPlaceholder": "ප්‍රකාශනය",
+    "block.processPlaceholder": "x = 1",
+    "block.conditionPlaceholder": "කොන්දේසිය",
+    "tab.terminal": "ටර්මිනලය",
+    "tab.variables": "විචල්‍යයන්",
+    "tab.problems": "ගැටලු",
+    "panel.terminal.empty": "ටර්මිනල් සටහන හිස්ය",
+    "panel.terminal.emptyDesc": "ගැලීම් සටහන ක්‍රියාත්මක කිරීමට ධාවනය හෝ පියවර ඔබන්න",
+    "panel.terminal.clear": "හිස් කරන්න",
+    "panel.terminal.olderTruncated": "පැරණි ප්‍රතිදානයන් සඟවන ලදී — වඩාත්ම මෑත පේළි පමණක් පෙන්වයි.",
+    "panel.terminal.promptFor": "කරුණාකර {varName} ({valueType}) සඳහා අගය ඇතුළත් කරන්න:",
+    "panel.terminal.typeInputPlaceholder": "{type} අගයක් ටයිප් කර Enter ඔබන්න",
+    "panel.terminal.sys.PROGRAM_FINISHED": "වැඩසටහන ක්‍රියාත්මක වී අවසන් විය.",
+    "panel.terminal.sys.PROGRAM_RESET": "වැඩසටහන් තත්ත්වය නැවත මුලට සකසන ලදී.",
+    "panel.terminal.sys.EDIT_DURING_RUN": "ගැලීම් සටහන සංස්කරණය විය — වැඩසටහන් ධාවනය නැවත මුලට සකසන ලදී.",
+    "panel.terminal.sys.OUTPUT_TRUNCATED": "[ප්‍රතිදාන සටහන පේළි 2000 කට සීමා කරන ලදී]",
+    "panel.variables.empty": "තවම විචල්‍යයන් නිර්මාණය කර නැත",
+    "panel.variables.emptyDesc": "ක්‍රියාවලිය හෝ ආදානය බ්ලොක් මගින් සාදන විචල්‍යයන් මෙහි පෙනෙනු ඇත",
+    "panel.variables.colName": "විචල්‍යය",
+    "panel.variables.colType": "වර්ගය",
+    "panel.variables.colValue": "අගය",
+    "panel.problems.empty": "ගැටලු කිසිවක් නැත",
+    "panel.problems.emptyDesc": "ඔබගේ ගැලීම් සටහන් ව්‍යුහය සහ කේතය සියලු පරීක්ෂණ සමත් වේ",
+    "toast.imported": "ගැලීම් සටහන සාර්ථකව ආනයනය කරන ලදී.",
+    "toast.importFailed": "ආනයනය අසාර්ථකයි: {error}",
+    "toast.cleared": "කැන්වසය හිස් කරන ලදී. නව ආරම්භය බ්ලොක් එකක් සූදානම්.",
+    "toast.exported": "ගැලීම් සටහන ගොනුවකට අපනයනය කරන ලදී.",
+    "toast.inputPaused": "ආදානය බ්ලොක් එක ළඟ ධාවනය නැවතුණි. නැවත ආරම්භ කිරීමට ටර්මිනලයේ අගය ටයිප් කරන්න.",
+    "canvas.loading": "ගැලීම් සටහන් කැන්වසය පූරණය වෙමින් පවතී..."
+  }
+}
