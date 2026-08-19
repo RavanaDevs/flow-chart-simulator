@@ -1,4 +1,6 @@
 import { Geist, Geist_Mono, Noto_Sans_Sinhala } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,6 +44,8 @@ export default function RootLayout({
             <Toaster position="top-right" />
           </TooltipProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
