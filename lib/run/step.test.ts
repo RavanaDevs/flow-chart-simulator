@@ -5,6 +5,7 @@ import { initialState } from "./state";
 import { step } from "./step";
 import { provideInput } from "./input";
 import { FIXTURES } from "../testing/programs";
+import { flow } from "../testing/build-flow";
 
 function runToCompletion(program: Program, inputs: string[] = []) {
   let state = initialState();
@@ -253,6 +254,67 @@ describe("Interpreter & Step Engine", () => {
 
     state = provideInput(cRes.program, state, "10");
     expect(state.pendingInput?.varName).toBe("qty");
+  });
+
+  it("prints one terminal line per line of an Output block", () => {
+    const cRes = compile(FIXTURES.receipt);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("finished");
+
+    const outputs = endState.terminal
+      .filter((l) => l.kind === "output")
+      .map((l) => (l.kind === "output" ? l.text : ""));
+
+    // Three source lines -> three printed lines; commas joined within each.
+    expect(outputs).toEqual(["Receipt", "qty:   3", "price: 200"]);
+  });
+
+  it("counts a whole multi-line Output block as a single step", () => {
+    const cRes = compile(FIXTURES.receipt);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (
+      state.currentNodeId !== "3" &&
+      state.status !== "finished" &&
+      state.status !== "error"
+    ) {
+      state = step(cRes.program, state);
+    }
+    expect(state.currentNodeId).toBe("3");
+    const before = state.stepCount;
+
+    state = step(cRes.program, state);
+
+    expect(state.stepCount).toBe(before + 1);
+    expect(state.terminal.filter((l) => l.kind === "output")).toHaveLength(3);
+  });
+
+  it("keeps lines already printed when a later line of an Output block fails", () => {
+    const graph = flow()
+      .start("1")
+      .output("2", `"first"\n"second"\nmissing`)
+      .stop("3")
+      .connect("1", "2")
+      .connect("2", "3")
+      .build();
+
+    const cRes = compile(graph);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program);
+    expect(endState.status).toBe("error");
+    expect(endState.error?.code).toBe("UNKNOWN_VARIABLE");
+
+    const outputs = endState.terminal
+      .filter((l) => l.kind === "output")
+      .map((l) => (l.kind === "output" ? l.text : ""));
+
+    // How far it got is visible, rather than the whole block vanishing.
+    expect(outputs).toEqual(["first", "second"]);
   });
 
   it("lights the Stop block and stops the path animation on finish", () => {

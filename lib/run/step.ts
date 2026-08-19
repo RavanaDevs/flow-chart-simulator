@@ -140,36 +140,47 @@ export function step(program: Program, state: RunState): RunState {
     }
 
     case "output": {
-      // Left to right, stopping at the first bad item so the error span
-      // points at that item rather than the whole block.
-      const parts: string[] = [];
-      for (const expr of currNode.exprs) {
-        const evalRes = evaluate(expr, state.variables);
-        if (!evalRes.ok) {
-          const errWithNode = { ...evalRes.error, nodeId: currNode.id };
-          const errLine: TerminalLine = { kind: "error", error: errWithNode };
-          const { lines, truncated } = appendTerminal(state.terminal, errLine);
-          return {
-            ...state,
-            status: "error",
-            lastEdgeId: null,
-            error: errWithNode,
-            stepCount: nextStepCount,
-            recentNodeIds: nextRecent,
-            terminal: lines,
-            terminalTruncated: state.terminalTruncated || truncated,
-          };
+      // One printed line per line of the block. Within a line, values are
+      // evaluated left to right and stop at the first bad one, so the error
+      // span points at that value rather than the whole block.
+      const outLines: TerminalLine[] = [];
+
+      for (const exprs of currNode.lines) {
+        const parts: string[] = [];
+        for (const expr of exprs) {
+          const evalRes = evaluate(expr, state.variables);
+          if (!evalRes.ok) {
+            const errWithNode = { ...evalRes.error, nodeId: currNode.id };
+            // Whatever printed successfully before the failure is kept, so the
+            // terminal shows how far the block got.
+            const { lines, truncated } = appendTerminal(
+              state.terminal,
+              ...outLines,
+              { kind: "error", error: errWithNode }
+            );
+            return {
+              ...state,
+              status: "error",
+              lastEdgeId: null,
+              error: errWithNode,
+              stepCount: nextStepCount,
+              recentNodeIds: nextRecent,
+              terminal: lines,
+              terminalTruncated: state.terminalTruncated || truncated,
+            };
+          }
+          parts.push(formatValue(evalRes.value));
         }
-        parts.push(formatValue(evalRes.value));
+
+        outLines.push({
+          kind: "output",
+          // Joined with nothing: the student controls spacing through their
+          // own string literals, so what they type is what they get.
+          text: parts.join(""),
+        });
       }
 
-      const outLine: TerminalLine = {
-        kind: "output",
-        // Joined with nothing: the student controls spacing through their own
-        // string literals, so what they type is what they get.
-        text: parts.join(""),
-      };
-      const { lines, truncated } = appendTerminal(state.terminal, outLine);
+      const { lines, truncated } = appendTerminal(state.terminal, ...outLines);
 
       return {
         ...state,

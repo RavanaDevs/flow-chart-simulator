@@ -20,6 +20,10 @@ export type ParseOutputListResult =
   | { ok: true; exprs: Expr[] }
   | { ok: false; error: RunError };
 
+export type ParseOutputBlockResult =
+  | { ok: true; lines: Expr[][] }
+  | { ok: false; error: RunError };
+
 export type ParseProcessListResult =
   | { ok: true; assignments: Assignment[] }
   | { ok: false; error: RunError };
@@ -693,4 +697,29 @@ export function parseProcessList(src: string): ParseProcessListResult {
   }
 
   return { ok: true, assignments };
+}
+
+/**
+ * Output blocks print one line per line of text. Within a line, commas join
+ * values together; a new line starts a new line of output.
+ */
+export function parseOutputBlock(src: string): ParseOutputBlockResult {
+  src = typeof src === "string" ? src : "";
+
+  const sourceLines = splitLines(src);
+  if (sourceLines.length === 0) {
+    return {
+      ok: false,
+      error: { code: "OUTPUT_EMPTY", params: {}, span: [0, 0] },
+    };
+  }
+
+  const lines: Expr[][] = [];
+  for (const line of sourceLines) {
+    const res = parseOutputList(line.text, line.offset);
+    if (!res.ok) return res;
+    lines.push(res.exprs);
+  }
+
+  return { ok: true, lines };
 }

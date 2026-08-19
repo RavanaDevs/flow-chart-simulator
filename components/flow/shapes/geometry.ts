@@ -38,7 +38,7 @@ const GROWS: Record<NodeKind, boolean> = {
   start: false,
   stop: false,
   input: true,
-  output: false,
+  output: true,
   process: true,
   if: false,
   connector: false,

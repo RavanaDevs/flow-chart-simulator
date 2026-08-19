@@ -6,6 +6,7 @@ import {
   parseOutputList,
   parseIdentifierList,
   parseProcessList,
+  parseOutputBlock,
 } from "./parser";
 
 describe("parseExpression", () => {
@@ -190,5 +191,24 @@ describe("parseIdentifierList across lines", () => {
     const res = parseIdentifierList("age, score\nname");
     expect(res.ok).toBe(true);
     if (res.ok) expect(res.names).toEqual(["age", "score", "name"]);
+  });
+});
+
+describe("string literals and line breaks", () => {
+  it("requires a text value to be closed on the line it opens", () => {
+    // Lines are parsed independently, so a missing closing quote cannot run on
+    // and swallow the rest of the block.
+    const res = parseOutputBlock('"unclosed\n"next line"');
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.error.code).toBe("LEX_UNTERMINATED_STRING");
+  });
+
+  it("prints one line per source line", () => {
+    const res = parseOutputBlock('"a"\n"b", "c"');
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.lines).toHaveLength(2);
+      expect(res.lines[1]).toHaveLength(2);
+    }
   });
 });

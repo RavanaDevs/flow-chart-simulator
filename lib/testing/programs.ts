@@ -100,6 +100,18 @@ export const FIXTURES: Record<string, FlowGraph> = {
     .connect("4", "5")
     .build(),
 
+  // A single Output block printing several lines. Commas join values within
+  // a line; a new line starts a new line of output.
+  receipt: flow()
+    .start("1")
+    .process("2", "qty = 3\nprice = 200")
+    .output("3", `"Receipt"\n"qty:   ", qty\n"price: ", price`)
+    .stop("4")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "4")
+    .build(),
+
   // Prints on every iteration and never stops. Used to exercise the terminal
   // line cap and the step budget together.
   printLoop: flow()

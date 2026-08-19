@@ -19,8 +19,8 @@ export type CompiledNode =
   | {
       kind: "output";
       id: NodeId;
-      /** Comma-separated values; formatted then joined. */
-      exprs: Expr[];
+      /** One printed line per entry; values within a line are joined. */
+      lines: Expr[][];
       next: NodeId;
       nextEdgeId: EdgeId;
     }
