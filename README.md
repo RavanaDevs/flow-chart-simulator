@@ -1,3 +1,5 @@
+**English** · [සිංහල](README.si.md)
+
 # Flowchart Simulator
 
 Draw a flowchart, press **Run**, and watch it execute like a console program.
