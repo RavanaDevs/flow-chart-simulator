@@ -33,22 +33,51 @@ const SIZES: Record<NodeKind, { width: number; height: number }> = {
   connector: { width: 32, height: 32 },
 };
 
+/** Blocks whose text can run to several lines, and which grow to fit. */
+const GROWS: Record<NodeKind, boolean> = {
+  start: false,
+  stop: false,
+  input: true,
+  output: false,
+  process: true,
+  if: false,
+  connector: false,
+};
+
 /** Inset so the stroke is not clipped by the SVG viewBox. */
 const PAD = 2;
 
-export function getShapeSize(kind: NodeKind): { width: number; height: number } {
-  return SIZES[kind];
+/**
+ * Extra height per line beyond the first. A whole SHAPE_UNIT, because a block
+ * that grows by anything less would break the centre-line alignment that
+ * lets ports on different blocks line up.
+ */
+const LINE_HEIGHT = SHAPE_UNIT;
+
+/** How many lines a block's text occupies. Blocks are sized from this. */
+export function countLines(text: string | undefined): number {
+  if (!text) return 1;
+  return Math.max(1, text.split("\n").length);
 }
 
-export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
-  const { width: w, height: h } = SIZES[kind];
+export function getShapeSize(
+  kind: NodeKind,
+  lines = 1
+): { width: number; height: number } {
+  const base = SIZES[kind];
+  if (!GROWS[kind] || lines <= 1) return base;
+  return { width: base.width, height: base.height + (lines - 1) * LINE_HEIGHT };
+}
+
+export function getShapeGeometry(kind: NodeKind, lines = 1): ShapeGeometry {
+  const { width: w, height: h } = getShapeSize(kind, lines);
   const p = PAD;
 
   switch (kind) {
     case "start":
     case "stop": {
       // Stadium: the radius is half the height, so the ends are true semicircles.
-      const r = (h - p * 2) / 2;
+      const r = Math.min((h - p * 2) / 2, (w - p * 2) / 2);
       return {
         width: w,
         height: h,

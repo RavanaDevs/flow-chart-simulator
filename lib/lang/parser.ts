@@ -20,6 +20,10 @@ export type ParseOutputListResult =
   | { ok: true; exprs: Expr[] }
   | { ok: false; error: RunError };
 
+export type ParseProcessListResult =
+  | { ok: true; assignments: Assignment[] }
+  | { ok: false; error: RunError };
+
 export type ParseIdentListResult =
   | { ok: true; names: string[]; spans: Span[] }
   | { ok: false; error: RunError };
@@ -386,7 +390,7 @@ class Parser {
   }
 }
 
-export function parseExpression(src: string): ParseExprResult {
+export function parseExpression(src: string, offset = 0): ParseExprResult {
   src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
@@ -395,12 +399,12 @@ export function parseExpression(src: string): ParseExprResult {
       error: {
         code: "PARSE_UNEXPECTED_TOKEN",
         params: { found: "empty input", expected: "expression" },
-        span: [0, 0],
+        span: [offset, offset],
       },
     };
   }
 
-  const lexRes = tokenize(src);
+  const lexRes = tokenize(src, offset);
   if (!lexRes.ok) return lexRes;
 
   try {
@@ -413,7 +417,7 @@ export function parseExpression(src: string): ParseExprResult {
   }
 }
 
-export function parseProcess(src: string): ParseProcessResult {
+export function parseProcess(src: string, offset = 0): ParseProcessResult {
   src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
@@ -422,12 +426,12 @@ export function parseProcess(src: string): ParseProcessResult {
       error: {
         code: "PARSE_UNEXPECTED_TOKEN",
         params: { found: "empty input", expected: "assignment (e.g. x = 1)" },
-        span: [0, 0],
+        span: [offset, offset],
       },
     };
   }
 
-  const lexRes = tokenize(src);
+  const lexRes = tokenize(src, offset);
   if (!lexRes.ok) return lexRes;
 
   const tokens = lexRes.tokens;
@@ -437,7 +441,7 @@ export function parseProcess(src: string): ParseProcessResult {
       error: {
         code: "PARSE_UNEXPECTED_TOKEN",
         params: { found: "empty input", expected: "identifier" },
-        span: [0, 0],
+        span: [offset, offset],
       },
     };
   }
@@ -505,7 +509,7 @@ export function parseProcess(src: string): ParseProcessResult {
   }
 }
 
-export function parseIdentifier(src: string): ParseIdentResult {
+export function parseIdentifier(src: string, offset = 0): ParseIdentResult {
   src = typeof src === "string" ? src : "";
   const trimmed = src.trim();
   if (trimmed === "") {
@@ -514,12 +518,12 @@ export function parseIdentifier(src: string): ParseIdentResult {
       error: {
         code: "PARSE_EXPECTED_IDENTIFIER",
         params: { found: "empty input" },
-        span: [0, 0],
+        span: [offset, offset],
       },
     };
   }
 
-  const lexRes = tokenize(src);
+  const lexRes = tokenize(src, offset);
   if (!lexRes.ok) return lexRes;
 
   const tokens = lexRes.tokens;
@@ -529,7 +533,7 @@ export function parseIdentifier(src: string): ParseIdentResult {
       error: {
         code: "PARSE_EXPECTED_IDENTIFIER",
         params: { found: "empty input" },
-        span: [0, 0],
+        span: [offset, offset],
       },
     };
   }
@@ -580,7 +584,7 @@ export function parseIdentifier(src: string): ParseIdentResult {
  * Output blocks take a comma-separated list of values. Each item is formatted
  * and the results are joined, so `"Total: ", total` prints `Total: 55`.
  */
-export function parseOutputList(src: string): ParseOutputListResult {
+export function parseOutputList(src: string, offset = 0): ParseOutputListResult {
   src = typeof src === "string" ? src : "";
   if (src.trim() === "") {
     return {
@@ -589,7 +593,7 @@ export function parseOutputList(src: string): ParseOutputListResult {
     };
   }
 
-  const lexRes = tokenize(src);
+  const lexRes = tokenize(src, offset);
   if (!lexRes.ok) return lexRes;
 
   try {
@@ -602,21 +606,21 @@ export function parseOutputList(src: string): ParseOutputListResult {
   }
 }
 
-/** Input blocks take one or more variable names: `age, score`. */
-export function parseIdentifierList(src: string): ParseIdentListResult {
-  src = typeof src === "string" ? src : "";
-  if (src.trim() === "") {
-    return {
-      ok: false,
-      error: {
-        code: "PARSE_EXPECTED_IDENTIFIER",
-        params: { found: "empty input" },
-        span: [0, 0],
-      },
-    };
-  }
+/** One line of a block, with where it starts inside the whole block. */
+type SourceLine = { text: string; offset: number };
 
-  const lexRes = tokenize(src);
+function splitLines(src: string): SourceLine[] {
+  const lines: SourceLine[] = [];
+  let offset = 0;
+  for (const text of src.split("\n")) {
+    lines.push({ text, offset });
+    offset += text.length + 1; // + the newline itself
+  }
+  return lines.filter((l) => l.text.trim() !== "");
+}
+
+function parseIdentLine(src: string, offset: number): ParseIdentListResult {
+  const lexRes = tokenize(src, offset);
   if (!lexRes.ok) return lexRes;
 
   try {
@@ -627,4 +631,66 @@ export function parseIdentifierList(src: string): ParseIdentListResult {
   } catch (err: unknown) {
     return { ok: false, error: err as RunError };
   }
+}
+
+/**
+ * Input blocks take one or more variable names. Both a comma and a new line
+ * separate them, so `age, score` and one name per line mean the same thing.
+ */
+export function parseIdentifierList(src: string): ParseIdentListResult {
+  src = typeof src === "string" ? src : "";
+
+  const lines = splitLines(src);
+  if (lines.length === 0) {
+    return {
+      ok: false,
+      error: {
+        code: "PARSE_EXPECTED_IDENTIFIER",
+        params: { found: "empty input" },
+        span: [0, 0],
+      },
+    };
+  }
+
+  const names: string[] = [];
+  const spans: Span[] = [];
+
+  for (const line of lines) {
+    const res = parseIdentLine(line.text, line.offset);
+    if (!res.ok) return res;
+    names.push(...res.names);
+    spans.push(...res.spans);
+  }
+
+  return { ok: true, names, spans };
+}
+
+/**
+ * Process blocks hold one assignment per line. They run top to bottom, each
+ * line seeing what the lines above it stored, so a block can read as a short
+ * sequence of steps rather than forcing one box per assignment.
+ */
+export function parseProcessList(src: string): ParseProcessListResult {
+  src = typeof src === "string" ? src : "";
+
+  const lines = splitLines(src);
+  if (lines.length === 0) {
+    return {
+      ok: false,
+      error: {
+        code: "PROCESS_MISSING_EQUALS",
+        params: { src: "" },
+        span: [0, 0],
+      },
+    };
+  }
+
+  const assignments: Assignment[] = [];
+  for (const line of lines) {
+    const res = parseProcess(line.text, line.offset);
+    if (!res.ok) return res;
+    assignments.push(res.assignment);
+  }
+
+  return { ok: true, assignments };
 }

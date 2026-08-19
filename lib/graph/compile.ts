@@ -2,10 +2,10 @@ import { FlowGraph, FlowNode, FlowEdge, NodeId } from "./types";
 import { Program, CompiledNode, CompileResult } from "./program";
 import { Diagnostic } from "../errors/diagnostic";
 import { branchOf } from "./handles";
-import { Expr } from "../lang/ast";
+import { Expr, Assignment } from "../lang/ast";
 import {
   parseExpression,
-  parseProcess,
+  parseProcessList,
   parseIdentifierList,
   parseOutputList,
 } from "../lang/parser";
@@ -122,7 +122,7 @@ export function compile(graph: FlowGraph): CompileResult {
     | { kind: "connector" }
     | { kind: "input"; varNames: string[] }
     | { kind: "output"; exprs: Expr[] }
-    | { kind: "process"; target: string; expr: Expr }
+    | { kind: "process"; assignments: Assignment[] }
     | { kind: "if"; cond: Expr }
   >();
 
@@ -180,14 +180,13 @@ export function compile(graph: FlowGraph): CompileResult {
         parsedData.set(node.id, { kind: "output", exprs: pRes.exprs });
       }
     } else if (node.kind === "process") {
-      const pRes = parseProcess(node.data.source);
+      const pRes = parseProcessList(node.data.source);
       if (!pRes.ok) {
         addDiag({ ...pRes.error, severity: "error", nodeId: node.id });
       } else {
         parsedData.set(node.id, {
           kind: "process",
-          target: pRes.assignment.target,
-          expr: pRes.assignment.value,
+          assignments: pRes.assignments,
         });
       }
     } else if (node.kind === "if") {
@@ -343,7 +342,7 @@ export function compile(graph: FlowGraph): CompileResult {
       if (data?.kind === "input") {
         for (const name of data.varNames) outVars.add(name);
       } else if (data?.kind === "process") {
-        outVars.add(data.target);
+        for (const a of data.assignments) outVars.add(a.target);
       }
 
       const prevOut = assignedByNode.get(nodeId);
@@ -407,19 +406,9 @@ export function compile(graph: FlowGraph): CompileResult {
       }
     }
 
-    const exprsToTest: Expr[] = [];
-    if (data.kind === "process") {
-      exprsToTest.push(data.expr);
-    } else if (data.kind === "output") {
-      exprsToTest.push(...data.exprs);
-    } else if (data.kind === "if") {
-      exprsToTest.push(data.cond);
-    }
-
-    for (const expr of exprsToTest) {
-      const refs = getReferencedVars(expr);
-      for (const ref of refs) {
-        if (!inVars.has(ref.name)) {
+    const warnUnassigned = (expr: Expr, known: Set<string>) => {
+      for (const ref of getReferencedVars(expr)) {
+        if (!known.has(ref.name)) {
           addDiag({
             code: "VARIABLE_MAYBE_UNASSIGNED",
             params: { name: ref.name },
@@ -429,6 +418,20 @@ export function compile(graph: FlowGraph): CompileResult {
           });
         }
       }
+    };
+
+    if (data.kind === "process") {
+      // Walked in order: a line may read what an earlier line in the same
+      // block assigned, so `b = a + 1` after `a = 2` is not a warning.
+      const known = new Set(inVars);
+      for (const assignment of data.assignments) {
+        warnUnassigned(assignment.value, known);
+        known.add(assignment.target);
+      }
+    } else if (data.kind === "output") {
+      for (const expr of data.exprs) warnUnassigned(expr, inVars);
+    } else if (data.kind === "if") {
+      warnUnassigned(data.cond, inVars);
     }
   }
 
@@ -490,8 +493,7 @@ export function compile(graph: FlowGraph): CompileResult {
       compiledNodes[nodeId] = {
         kind: "process",
         id: nodeId,
-        target: (data as { target: string }).target,
-        expr: (data as { expr: Expr }).expr,
+        assignments: (data as { assignments: Assignment[] }).assignments,
         next: links!.next!.targetId,
         nextEdgeId: links!.next!.edgeId,
       };

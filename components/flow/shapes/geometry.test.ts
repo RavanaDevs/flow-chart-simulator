@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { NodeKind } from "@/lib/graph/types";
 import { GRID_SIZE } from "@/lib/graph/grid";
-import { getShapeSize, SHAPE_UNIT } from "./geometry";
+import { getShapeSize, SHAPE_UNIT, countLines } from "./geometry";
 
 const KINDS: NodeKind[] = [
   "start",
@@ -42,5 +42,35 @@ describe("shape geometry", () => {
 
     expect(decisionX % GRID_SIZE).toBe(0); // reachable by snapping
     expect(startX + start.width / 2).toBe(decisionX + decision.width / 2);
+  });
+
+  it("keeps the alignment invariant as a block grows with its text", () => {
+    for (const kind of KINDS) {
+      for (let lines = 1; lines <= 8; lines++) {
+        const { width, height } = getShapeSize(kind, lines);
+        expect((width / 2) % GRID_SIZE, `${kind} @${lines} lines`).toBe(0);
+        expect((height / 2) % GRID_SIZE, `${kind} @${lines} lines`).toBe(0);
+      }
+    }
+  });
+
+  it("grows only the blocks that hold multi-line text", () => {
+    expect(getShapeSize("process", 3).height).toBeGreaterThan(
+      getShapeSize("process", 1).height
+    );
+    expect(getShapeSize("input", 3).height).toBeGreaterThan(
+      getShapeSize("input", 1).height
+    );
+    // A decision or a junction has nothing to grow for.
+    expect(getShapeSize("if", 3)).toEqual(getShapeSize("if", 1));
+    expect(getShapeSize("connector", 3)).toEqual(getShapeSize("connector", 1));
+  });
+
+  it("counts lines the way a textarea does", () => {
+    expect(countLines(undefined)).toBe(1);
+    expect(countLines("")).toBe(1);
+    expect(countLines("x = 1")).toBe(1);
+    expect(countLines("x = 1\ny = 2")).toBe(2);
+    expect(countLines("a\nb\nc")).toBe(3);
   });
 });

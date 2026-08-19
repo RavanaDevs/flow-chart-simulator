@@ -86,6 +86,20 @@ export const FIXTURES: Record<string, FlowGraph> = {
     .connect("7", "8")
     .build(),
 
+  // One process block holding several assignments, and an input block whose
+  // names are written one per line.
+  multiLine: flow()
+    .start("1")
+    .input("2", "price\nqty", "number")
+    .process("3", "subtotal = price * qty\ntax = subtotal / 10\ntotal = subtotal + tax")
+    .output("4", `"total = ", total`)
+    .stop("5")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "4")
+    .connect("4", "5")
+    .build(),
+
   // Prints on every iteration and never stops. Used to exercise the terminal
   // line cap and the step budget together.
   printLoop: flow()

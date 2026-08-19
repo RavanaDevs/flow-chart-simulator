@@ -104,31 +104,36 @@ export function step(program: Program, state: RunState): RunState {
     }
 
     case "process": {
-      const evalRes = evaluate(currNode.expr, state.variables);
-      if (!evalRes.ok) {
-        const errWithNode = { ...evalRes.error, nodeId: currNode.id };
-        const errLine: TerminalLine = { kind: "error", error: errWithNode };
-        const { lines, truncated } = appendTerminal(state.terminal, errLine);
-        return {
-          ...state,
-          status: "error",
-          lastEdgeId: null,
-          error: errWithNode,
-          stepCount: nextStepCount,
-          recentNodeIds: nextRecent,
-          terminal: lines,
-          terminalTruncated: state.terminalTruncated || truncated,
-        };
+      // Lines run top to bottom and each sees what the lines above stored, so
+      // `total = price * qty` can follow `qty = 3` in the same block. The
+      // whole block is still one step.
+      let variables = state.variables;
+
+      for (const assignment of currNode.assignments) {
+        const evalRes = evaluate(assignment.value, variables);
+        if (!evalRes.ok) {
+          const errWithNode = { ...evalRes.error, nodeId: currNode.id };
+          const errLine: TerminalLine = { kind: "error", error: errWithNode };
+          const { lines, truncated } = appendTerminal(state.terminal, errLine);
+          return {
+            ...state,
+            status: "error",
+            lastEdgeId: null,
+            error: errWithNode,
+            stepCount: nextStepCount,
+            recentNodeIds: nextRecent,
+            terminal: lines,
+            terminalTruncated: state.terminalTruncated || truncated,
+          };
+        }
+        variables = { ...variables, [assignment.target]: evalRes.value };
       }
 
       return {
         ...state,
         stepCount: nextStepCount,
         recentNodeIds: nextRecent,
-        variables: {
-          ...state.variables,
-          [currNode.target]: evalRes.value,
-        },
+        variables,
         currentNodeId: currNode.next,
         lastEdgeId: currNode.nextEdgeId,
       };

@@ -5,6 +5,7 @@ import {
   parseIdentifier,
   parseOutputList,
   parseIdentifierList,
+  parseProcessList,
 } from "./parser";
 
 describe("parseExpression", () => {
@@ -148,5 +149,46 @@ describe("missing block text", () => {
     expect(() => parseOutputList(missing)).not.toThrow();
     expect(() => parseIdentifierList(missing)).not.toThrow();
     expect(parseOutputList(missing).ok).toBe(false);
+  });
+});
+
+describe("parseProcessList", () => {
+  it("parses one assignment per line", () => {
+    const res = parseProcessList("a = 1\nb = a + 1\nc = b * 2");
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.assignments.map((a) => a.target)).toEqual(["a", "b", "c"]);
+    }
+  });
+
+  it("ignores blank lines", () => {
+    const res = parseProcessList("a = 1\n\n\nb = 2\n");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.assignments).toHaveLength(2);
+  });
+
+  it("reports an error on a later line at its real position in the block", () => {
+    const src = "a = 1\nb = 2\nc = ";
+    const res = parseProcessList(src);
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+
+    // The span must point into line 3, not into line 1 — otherwise the editor
+    // underlines the wrong characters.
+    const [start] = res.error.span!;
+    expect(start).toBeGreaterThanOrEqual(src.indexOf("c = "));
+  });
+
+  it("rejects a line that is not an assignment", () => {
+    const res = parseProcessList("a = 1\nb + 1");
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe("parseIdentifierList across lines", () => {
+  it("accepts new lines and commas interchangeably", () => {
+    const res = parseIdentifierList("age, score\nname");
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.names).toEqual(["age", "score", "name"]);
   });
 });

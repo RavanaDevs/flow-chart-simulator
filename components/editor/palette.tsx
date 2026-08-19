@@ -4,7 +4,7 @@ import { useGraphStore } from "@/stores/graph-store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getShapeSize } from "@/components/flow/shapes/geometry";
+import { getShapeSize, countLines } from "@/components/flow/shapes/geometry";
 import { GRID_SIZE } from "@/lib/graph/grid";
 import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork, CircleDot } from "lucide-react";
 
@@ -81,7 +81,11 @@ export const Palette: React.FC = () => {
     // Drop the new block directly below the selected one and share a centre
     // line, so the connecting arrow comes out straight. Every shape dimension
     // is a whole number of grid steps, so this offset survives snapping.
-    const base = getShapeSize(selectedNode.kind);
+    const data = selectedNode.data as { source?: string; names?: string };
+    const base = getShapeSize(
+      selectedNode.kind,
+      countLines(data.source ?? data.names)
+    );
     const next = getShapeSize(kind);
 
     addNode(kind, {

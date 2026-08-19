@@ -16,6 +16,8 @@ type NodeFrameProps = {
   diagnosticMsg?: string;
   /** Accessible name for blocks that carry no visible text. */
   label?: string;
+  /** Lines of text the block holds; it grows to fit them. */
+  lines?: number;
   children: React.ReactNode;
 };
 
@@ -26,9 +28,10 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   severity,
   diagnosticMsg,
   label,
+  lines = 1,
   children,
 }) => {
-  const { width, height } = getShapeGeometry(kind);
+  const { width, height } = getShapeGeometry(kind, lines);
   const removeNode = useGraphStore((s) => s.removeNode);
 
   const isCurrent = useRunStore((s) => s.state.currentNodeId === id);
@@ -52,6 +55,7 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
       <ShapeSvg
         kind={kind}
         isSelected={isSelected}
+        lines={lines}
         runPhase={runPhase}
         severity={severity}
       />

@@ -2,6 +2,7 @@ import React from "react";
 import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
 import { ExpressionField } from "./expression-field";
+import { countLines } from "../shapes/geometry";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
 import { InputValueType } from "@/lib/graph/types";
@@ -18,7 +19,7 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
   const valueType = ((data as { valueType?: InputValueType }).valueType ?? "number") as InputValueType;
 
   return (
-    <NodeFrame id={id} kind="input" isSelected={selected}>
+    <NodeFrame id={id} kind="input" isSelected={selected} lines={countLines(names)}>
       {isAwaiting && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-lg animate-bounce whitespace-nowrap">
           <span>Type in Terminal</span> ↵
@@ -42,6 +43,7 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
           value={names}
           onChange={(val) => updateNodeData(id, { names: val })}
           placeholder="name, name"
+          multiline
         />
       </div>
     </NodeFrame>

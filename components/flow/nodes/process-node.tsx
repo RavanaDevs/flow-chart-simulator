@@ -2,6 +2,7 @@ import React from "react";
 import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
 import { ExpressionField } from "./expression-field";
+import { countLines } from "../shapes/geometry";
 import { useGraphStore } from "@/stores/graph-store";
 
 export const ProcessNode: React.FC<NodeProps> = ({ id, selected, data }) => {
@@ -10,7 +11,7 @@ export const ProcessNode: React.FC<NodeProps> = ({ id, selected, data }) => {
   const source = (data as { source?: string }).source ?? "x = 1";
 
   return (
-    <NodeFrame id={id} kind="process" isSelected={selected}>
+    <NodeFrame id={id} kind="process" isSelected={selected} lines={countLines(source)}>
       <div className="flex flex-col items-center gap-1">
         <span className="text-[10px] uppercase font-bold text-muted-foreground">
           Process
@@ -19,6 +20,7 @@ export const ProcessNode: React.FC<NodeProps> = ({ id, selected, data }) => {
           value={source}
           onChange={(val) => updateNodeData(id, { source: val })}
           placeholder="x = 1"
+          multiline
         />
       </div>
     </NodeFrame>

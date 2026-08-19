@@ -9,6 +9,7 @@ export type RunPhase = "active" | "finished" | "failed" | null;
 type ShapeSvgProps = {
   kind: NodeKind;
   isSelected?: boolean;
+  lines?: number;
   runPhase?: RunPhase;
   severity?: "error" | "warning" | null;
   className?: string;
@@ -17,11 +18,12 @@ type ShapeSvgProps = {
 export const ShapeSvg: React.FC<ShapeSvgProps> = ({
   kind,
   isSelected,
+  lines = 1,
   runPhase,
   severity,
   className,
 }) => {
-  const { width, height, pathD } = getShapeGeometry(kind);
+  const { width, height, pathD } = getShapeGeometry(kind, lines);
 
   return (
     <svg

@@ -1,5 +1,5 @@
 import { NodeId, EdgeId, InputValueType } from "./types";
-import { Expr } from "../lang/ast";
+import { Expr, Assignment } from "../lang/ast";
 import { Diagnostic } from "../errors/diagnostic";
 
 export type CompiledNode =
@@ -27,8 +27,8 @@ export type CompiledNode =
   | {
       kind: "process";
       id: NodeId;
-      target: string;
-      expr: Expr;
+      /** One assignment per line, executed top to bottom. */
+      assignments: Assignment[];
       next: NodeId;
       nextEdgeId: EdgeId;
     }

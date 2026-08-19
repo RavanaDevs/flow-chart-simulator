@@ -6,7 +6,37 @@ export type LexResult =
   | { ok: true; tokens: Token[] }
   | { ok: false; error: RunError };
 
-export function tokenize(src: string): LexResult {
+/**
+ * Blocks may hold several lines, and each line is tokenized on its own. The
+ * offset is where that line starts inside the whole block, so every span the
+ * parser produces stays an absolute position in the block's text and the
+ * editor can underline the right characters on the right line.
+ */
+export function tokenize(src: string, offset = 0): LexResult {
+  const result = tokenizeLocal(src);
+  if (offset === 0) return result;
+
+  if (!result.ok) {
+    const span = result.error.span;
+    return {
+      ok: false,
+      error: span
+        ? { ...result.error, span: [span[0] + offset, span[1] + offset] }
+        : result.error,
+    };
+  }
+
+  return {
+    ok: true,
+    tokens: result.tokens.map((t) => ({
+      ...t,
+      start: t.start + offset,
+      end: t.end + offset,
+    })),
+  };
+}
+
+function tokenizeLocal(src: string): LexResult {
   const tokens: Token[] = [];
   let i = 0;
   const len = src.length;

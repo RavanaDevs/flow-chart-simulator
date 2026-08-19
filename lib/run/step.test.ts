@@ -200,6 +200,61 @@ describe("Interpreter & Step Engine", () => {
     expect(after.currentNodeId).toBe("7");
   });
 
+  it("runs a multi-line process block top to bottom in one step", () => {
+    const cRes = compile(FIXTURES.multiLine);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const endState = runToCompletion(cRes.program, ["200", "3"]);
+    expect(endState.status).toBe("finished");
+
+    // Each line saw what the line above it stored.
+    expect(endState.variables).toMatchObject({
+      price: 200,
+      qty: 3,
+      subtotal: 600,
+      tax: 60,
+      total: 660,
+    });
+
+    const outputs = endState.terminal.filter((l) => l.kind === "output");
+    expect(outputs).toEqual([{ kind: "output", text: "total = 660" }]);
+  });
+
+  it("counts a whole multi-line process block as a single step", () => {
+    const cRes = compile(FIXTURES.multiLine);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (state.status !== "awaiting-input") state = step(cRes.program, state);
+    state = provideInput(cRes.program, state, "200");
+    state = provideInput(cRes.program, state, "3");
+
+    // Now sitting on the three-line process block.
+    expect(state.currentNodeId).toBe("3");
+    const before = state.stepCount;
+
+    state = step(cRes.program, state);
+
+    expect(state.stepCount).toBe(before + 1);
+    expect(state.currentNodeId).toBe("4");
+    expect(state.variables.total).toBe(660);
+  });
+
+  it("treats a new line in an Input block as another name", () => {
+    const cRes = compile(FIXTURES.multiLine);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (state.status !== "awaiting-input") state = step(cRes.program, state);
+
+    expect(state.pendingInput?.varName).toBe("price");
+    expect(state.pendingInput?.total).toBe(2);
+
+    state = provideInput(cRes.program, state, "10");
+    expect(state.pendingInput?.varName).toBe("qty");
+  });
+
   it("lights the Stop block and stops the path animation on finish", () => {
     const cRes = compile(FIXTURES.hello);
     if (!cRes.ok) return;
