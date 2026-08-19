@@ -29,6 +29,8 @@ const SIZES: Record<NodeKind, { width: number; height: number }> = {
   output: { width: 192, height: 64 },
   process: { width: 192, height: 64 },
   if: { width: 224, height: 128 },
+  // A junction is a point, not a box — the smallest size the lattice allows.
+  connector: { width: 32, height: 32 },
 };
 
 /** Inset so the stroke is not clipped by the SVG viewBox. */
@@ -80,6 +82,17 @@ export function getShapeGeometry(kind: NodeKind): ShapeGeometry {
         width: w,
         height: h,
         pathD: `M ${w / 2} ${p} L ${w - p} ${h / 2} L ${w / 2} ${h - p} L ${p} ${h / 2} Z`,
+      };
+    }
+
+    case "connector": {
+      const r = (Math.min(w, h) - p * 2) / 2;
+      const cx = w / 2;
+      const cy = h / 2;
+      return {
+        width: w,
+        height: h,
+        pathD: `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`,
       };
     }
   }

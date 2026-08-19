@@ -38,6 +38,8 @@ export const ShapeSvg: React.FC<ShapeSvgProps> = ({
         d={pathD}
         className={cn(
           "fill-card stroke-border stroke-2 transition-all",
+          // A junction is a point on the path, so it is drawn solid.
+          kind === "connector" && "fill-muted-foreground stroke-muted-foreground",
           isSelected && "stroke-primary stroke-[2.5px] drop-shadow-md",
           // Running pulses; finished and failed settle. A continuous pulse on
           // a program that has ended reads as "still working".

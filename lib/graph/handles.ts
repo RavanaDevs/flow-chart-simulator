@@ -29,6 +29,7 @@ export const TARGET_PORTS: Record<NodeKind, PortId[]> = {
   output: ["port-top", "port-right", "port-bottom", "port-left"],
   process: ["port-top", "port-right", "port-bottom", "port-left"],
   if: ["port-top", "port-right", "port-bottom", "port-left"],
+  connector: ["port-top", "port-right", "port-bottom", "port-left"],
 };
 
 /** Ports a block can be left through. */
@@ -39,6 +40,7 @@ export const SOURCE_PORTS: Record<NodeKind, PortId[]> = {
   output: ["port-top", "port-right", "port-bottom", "port-left"],
   process: ["port-top", "port-right", "port-bottom", "port-left"],
   if: ["true-bottom", "false-left", "false-right"],
+  connector: ["port-top", "port-right", "port-bottom", "port-left"],
 };
 
 /**

@@ -119,6 +119,7 @@ export function compile(graph: FlowGraph): CompileResult {
     NodeId,
     | { kind: "start" }
     | { kind: "stop" }
+    | { kind: "connector" }
     | { kind: "input"; varNames: string[] }
     | { kind: "output"; exprs: Expr[] }
     | { kind: "process"; target: string; expr: Expr }
@@ -143,6 +144,9 @@ export function compile(graph: FlowGraph): CompileResult {
       parsedData.set(node.id, { kind: "start" });
     } else if (node.kind === "stop") {
       parsedData.set(node.id, { kind: "stop" });
+    } else if (node.kind === "connector") {
+      // Nothing to parse — a junction holds no text.
+      parsedData.set(node.id, { kind: "connector" });
     } else if (node.kind === "input") {
       const pRes = parseIdentifierList(node.data.names);
       if (!pRes.ok) {
@@ -456,6 +460,13 @@ export function compile(graph: FlowGraph): CompileResult {
       compiledNodes[nodeId] = {
         kind: "stop",
         id: nodeId,
+      };
+    } else if (node.kind === "connector") {
+      compiledNodes[nodeId] = {
+        kind: "connector",
+        id: nodeId,
+        next: links!.next!.targetId,
+        nextEdgeId: links!.next!.edgeId,
       };
     } else if (node.kind === "input") {
       const inputNode = node as FlowNode & { kind: "input" };

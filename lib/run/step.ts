@@ -68,7 +68,10 @@ export function step(program: Program, state: RunState): RunState {
   const nextRecent = [...state.recentNodeIds.slice(-31), state.currentNodeId];
 
   switch (currNode.kind) {
-    case "start": {
+    case "start":
+    // A connector merges several paths into one. It performs no operation, so
+    // it behaves exactly like Start: hand control to whatever comes next.
+    case "connector": {
       return {
         ...state,
         stepCount: nextStepCount,

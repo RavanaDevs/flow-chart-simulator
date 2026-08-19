@@ -162,6 +162,44 @@ describe("Interpreter & Step Engine", () => {
     expect(state.variables.b).toBe(2);
   });
 
+  it("merges both branches through a connector into one flow", () => {
+    const cRes = compile(FIXTURES.merge);
+    expect(cRes.ok).toBe(true);
+    if (!cRes.ok) return;
+
+    const texts = (inputs: string[]) =>
+      runToCompletion(cRes.program, inputs)
+        .terminal.filter((l) => l.kind === "output")
+        .map((l) => (l.kind === "output" ? l.text : ""));
+
+    // Whichever branch runs, both continue through the junction.
+    expect(texts(["5"])).toEqual(["positive", "done"]);
+    expect(texts(["-5"])).toEqual(["not positive", "done"]);
+  });
+
+  it("passes straight through a connector without changing anything", () => {
+    const cRes = compile(FIXTURES.merge);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (state.status !== "awaiting-input") state = step(cRes.program, state);
+    state = provideInput(cRes.program, state, "5");
+
+    // Walk until the junction is the current block.
+    while (state.currentNodeId !== "6" && state.status === "running") {
+      state = step(cRes.program, state);
+    }
+    expect(state.currentNodeId).toBe("6");
+
+    const before = state;
+    const after = step(cRes.program, before);
+
+    // It is a waypoint, not an operation: nothing but position changes.
+    expect(after.variables).toEqual(before.variables);
+    expect(after.terminal).toBe(before.terminal);
+    expect(after.currentNodeId).toBe("7");
+  });
+
   it("lights the Stop block and stops the path animation on finish", () => {
     const cRes = compile(FIXTURES.hello);
     if (!cRes.ok) return;

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getShapeSize } from "@/components/flow/shapes/geometry";
 import { GRID_SIZE } from "@/lib/graph/grid";
-import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork } from "lucide-react";
+import { Play, Square, ArrowDownToLine, ArrowUpFromLine, Cpu, GitFork, CircleDot } from "lucide-react";
 
 type PaletteItem = {
   kind: NodeKind;
@@ -45,6 +45,12 @@ const ITEMS: PaletteItem[] = [
     label: "Decision (If)",
     description: "Branches on true/false condition",
     icon: <GitFork className="h-4 w-4 text-amber-500" />,
+  },
+  {
+    kind: "connector",
+    label: "Connector",
+    description: "Joins several paths back into one",
+    icon: <CircleDot className="h-4 w-4 text-slate-400" />,
   },
   {
     kind: "stop",

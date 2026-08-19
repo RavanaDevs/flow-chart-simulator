@@ -66,6 +66,26 @@ export const FIXTURES: Record<string, FlowGraph> = {
     .connect("3", "4")
     .build(),
 
+  // Both branches of a decision rejoin at a connector, then continue as one.
+  merge: flow()
+    .start("1")
+    .input("2", "n", "number")
+    .ifNode("3", "n > 0")
+    .output("4", `"positive"`)
+    .output("5", `"not positive"`)
+    .connector("6")
+    .output("7", `"done"`)
+    .stop("8")
+    .connect("1", "2")
+    .connect("2", "3")
+    .connect("3", "4", "true")
+    .connect("3", "5", "false")
+    .connect("4", "6")
+    .connect("5", "6")
+    .connect("6", "7")
+    .connect("7", "8")
+    .build(),
+
   // Prints on every iteration and never stops. Used to exercise the terminal
   // line cap and the step budget together.
   printLoop: flow()

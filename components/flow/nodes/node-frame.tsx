@@ -14,6 +14,8 @@ type NodeFrameProps = {
   isSelected?: boolean;
   severity?: "error" | "warning" | null;
   diagnosticMsg?: string;
+  /** Accessible name for blocks that carry no visible text. */
+  label?: string;
   children: React.ReactNode;
 };
 
@@ -23,6 +25,7 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   isSelected,
   severity,
   diagnosticMsg,
+  label,
   children,
 }) => {
   const { width, height } = getShapeGeometry(kind);
@@ -43,6 +46,7 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   return (
     <div
       className="group relative flex items-center justify-center select-none"
+      title={label}
       style={{ width, height }}
     >
       <ShapeSvg

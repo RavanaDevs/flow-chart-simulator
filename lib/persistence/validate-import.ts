@@ -9,6 +9,7 @@ const VALID_KINDS: Set<NodeKind> = new Set([
   "output",
   "process",
   "if",
+  "connector",
 ]);
 
 export function validateImport(

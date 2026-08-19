@@ -5,6 +5,8 @@ import { Diagnostic } from "../errors/diagnostic";
 export type CompiledNode =
   | { kind: "start"; id: NodeId; next: NodeId; nextEdgeId: EdgeId }
   | { kind: "stop"; id: NodeId }
+  /** Merge junction: several paths in, one path out. Carries no logic. */
+  | { kind: "connector"; id: NodeId; next: NodeId; nextEdgeId: EdgeId }
   | {
       kind: "input";
       id: NodeId;

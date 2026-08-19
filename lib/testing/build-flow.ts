@@ -31,6 +31,11 @@ export class FlowBuilder {
     return this;
   }
 
+  public connector(id: string): this {
+    this.nodes.push({ id, kind: "connector", position: { x: 0, y: 0 }, data: {} });
+    return this;
+  }
+
   public ifNode(id: string, source: string): this {
     this.nodes.push({ id, kind: "if", position: { x: 0, y: 0 }, data: { source } });
     return this;

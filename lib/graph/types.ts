@@ -7,7 +7,8 @@ export type NodeKind =
   | "input"
   | "output"
   | "process"
-  | "if";
+  | "if"
+  | "connector";
 
 export type InputValueType = "number" | "text";
 
@@ -17,7 +18,8 @@ export type FlowNode =
   | BaseNode<"input", { names: string; valueType: InputValueType }>
   | BaseNode<"output", { source: string }>
   | BaseNode<"process", { source: string }>
-  | BaseNode<"if", { source: string }>;
+  | BaseNode<"if", { source: string }>
+  | BaseNode<"connector", Record<string, never>>;
 
 type BaseNode<K extends NodeKind, D> = {
   id: NodeId;
