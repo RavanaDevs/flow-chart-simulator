@@ -76,6 +76,13 @@ removing that borrowed constraint. See `docs/PLAN-V3.md` for the full reasoning.
 
 ### Fixed
 
+- **The light default never applied to anyone who had opened the app before.** A theme
+  stored by `next-themes` always beats `defaultTheme`, and every browser that visited
+  while the app still ran `defaultTheme="system"` had `"system"` or `"dark"` written under
+  the library's default `"theme"` key — so those students stayed on dark permanently, on a
+  build that had already switched to light. The theme now persists under
+  `flowchart-sim:theme`, alongside the document and locale keys, which retires every stale
+  value at once. Changing the theme still persists as before.
 - **`font-mono` resolved to the wrong font, and broke Sinhala.** `--font-mono` was never
   mapped in the `@theme inline` block, so Tailwind fell back to its own stack: `Geist_Mono`
   was downloaded on every page load and never used, and every Sinhala string inside a
