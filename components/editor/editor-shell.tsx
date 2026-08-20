@@ -90,7 +90,7 @@ const InnerEditorShell: React.FC<{
   const { t } = useT();
   const status = useRunStore((s) => s.state.status);
   const isWatching = status !== "idle";
-  const [isRailCollapsed, setIsRailCollapsed] = useState(false);
+  const [isRailCollapsed, setIsRailCollapsed] = useState(true);
 
   useFollowNode(followNode);
 
