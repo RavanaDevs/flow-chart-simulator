@@ -22,7 +22,7 @@ export const VariablesPanel: React.FC = () => {
         </div>
       ) : (
         <div className="rounded-md border border-border overflow-hidden">
-          <table className="w-full text-left font-mono text-xs">
+          <table className="w-full text-left text-xs">
             <thead className="bg-muted text-[10px] uppercase font-bold text-muted-foreground border-b border-border">
               <tr>
                 <th className="p-2">{t("panel.variables.colName")}</th>

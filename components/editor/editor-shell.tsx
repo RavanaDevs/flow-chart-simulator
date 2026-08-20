@@ -23,6 +23,9 @@ import { compile } from "@/lib/graph/compile";
 import { useT } from "@/hooks/use-t";
 import { Terminal as TerminalIcon, Variable, AlertCircle } from "lucide-react";
 
+import { useRunStore } from "@/stores/run-store";
+import { cn } from "@/lib/utils";
+
 // Client-only dynamic mount for ReactFlow Canvas
 const FlowCanvas = dynamic(
   () => import("../flow/flow-canvas").then((mod) => mod.FlowCanvas),
@@ -39,7 +42,7 @@ const FlowCanvas = dynamic(
 export const EditorShell: React.FC = () => {
   const [speedMs, setSpeedMs] = useState(400);
   const [followNode, setFollowNode] = useState(true);
-  const [activeTab, setActiveTab] = useState("terminal");
+  const [activeTab, setActiveTab] = useState("output");
 
   const { nodes, edges } = useGraphStore();
 
@@ -85,6 +88,9 @@ const InnerEditorShell: React.FC<{
   errorCount,
 }) => {
   const { t } = useT();
+  const status = useRunStore((s) => s.state.status);
+  const isWatching = status !== "idle";
+
   useFollowNode(followNode);
 
   return (
@@ -99,8 +105,13 @@ const InnerEditorShell: React.FC<{
 
       {/* Main Workspace Layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Block Palette */}
-        <div className="w-56 shrink-0 border-r border-border bg-card">
+        {/* Left Block Palette — collapses when watching execution */}
+        <div
+          className={cn(
+            "shrink-0 border-r border-border bg-card transition-all duration-300 overflow-hidden",
+            isWatching ? "w-0 opacity-0 border-r-0" : "w-56 opacity-100"
+          )}
+        >
           <Palette />
         </div>
 
@@ -124,25 +135,25 @@ const InnerEditorShell: React.FC<{
                 >
                   <TabsList className="w-full justify-start rounded-none border-b border-border bg-muted/40 p-0 h-10">
                     <TabsTrigger
-                      value="terminal"
+                      value="output"
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <TerminalIcon className="mr-1.5 h-3.5 w-3.5" />
-                      {t("tab.terminal")}
+                      {t("tab.output")}
                     </TabsTrigger>
                     <TabsTrigger
-                      value="variables"
+                      value="values"
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <Variable className="mr-1.5 h-3.5 w-3.5" />
-                      {t("tab.variables")}
+                      {t("tab.values")}
                     </TabsTrigger>
                     <TabsTrigger
-                      value="problems"
+                      value="checks"
                       className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs font-semibold data-[state=active]:border-primary data-[state=active]:bg-card"
                     >
                       <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                      {t("tab.problems")}
+                      {t("tab.checks")}
                       {errorCount > 0 && (
                         <Badge
                           variant="destructive"
@@ -154,13 +165,13 @@ const InnerEditorShell: React.FC<{
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="terminal" className="flex-1 overflow-hidden m-0">
+                  <TabsContent value="output" className="flex-1 overflow-hidden m-0">
                     <TerminalPanel />
                   </TabsContent>
-                  <TabsContent value="variables" className="flex-1 overflow-hidden m-0">
+                  <TabsContent value="values" className="flex-1 overflow-hidden m-0">
                     <VariablesPanel />
                   </TabsContent>
-                  <TabsContent value="problems" className="flex-1 overflow-hidden m-0">
+                  <TabsContent value="checks" className="flex-1 overflow-hidden m-0">
                     <ProblemsPanel />
                   </TabsContent>
                 </Tabs>
