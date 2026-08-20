@@ -35,7 +35,7 @@ describe("Interpreter & Step Engine", () => {
     const endState = runToCompletion(cRes.program);
     expect(endState.status).toBe("finished");
     expect(endState.terminal).toHaveLength(2); // output line + system finished line
-    expect(endState.terminal[0]).toEqual({ kind: "output", text: "Hello" });
+    expect(endState.terminal[0]).toEqual({ kind: "output", text: "Hello", nodeId: "2" });
   });
 
   it("runs 'sum1To10' fixture to completion (sum = 55)", () => {
@@ -115,7 +115,7 @@ describe("Interpreter & Step Engine", () => {
     expect(endState.status).toBe("finished");
 
     const outputs = endState.terminal.filter((l) => l.kind === "output");
-    expect(outputs).toEqual([{ kind: "output", text: "Hello, Nimal!" }]);
+    expect(outputs).toEqual([{ kind: "output", text: "Hello, Nimal!", nodeId: "3" }]);
   });
 
   it("asks for each name in a multi-variable Input block in turn", () => {
@@ -135,7 +135,7 @@ describe("Interpreter & Step Engine", () => {
     ]);
 
     const outputs = endState.terminal.filter((l) => l.kind === "output");
-    expect(outputs).toEqual([{ kind: "output", text: "sum=6" }]);
+    expect(outputs).toEqual([{ kind: "output", text: "sum=6", nodeId: "3" }]);
   });
 
   it("re-asks for the SAME name when a value in a list is not a number", () => {
@@ -219,7 +219,7 @@ describe("Interpreter & Step Engine", () => {
     });
 
     const outputs = endState.terminal.filter((l) => l.kind === "output");
-    expect(outputs).toEqual([{ kind: "output", text: "total = 660" }]);
+    expect(outputs).toEqual([{ kind: "output", text: "total = 660", nodeId: "4" }]);
   });
 
   it("counts a whole multi-line process block as a single step", () => {

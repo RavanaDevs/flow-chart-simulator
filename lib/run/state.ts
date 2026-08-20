@@ -9,7 +9,7 @@ export type SystemCode =
   | "OUTPUT_TRUNCATED";
 
 export type TerminalLine =
-  | { kind: "output"; text: string }
+  | { kind: "output"; text: string; nodeId: NodeId }
   | { kind: "prompt"; varName: string; valueType: InputValueType }
   | { kind: "echo"; text: string }
   | { kind: "error"; error: RunError }
