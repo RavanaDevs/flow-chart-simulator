@@ -167,6 +167,7 @@
   },
   "ui": {
     "toolbar.run": "ධාවනය",
+    "toolbar.pause": "විරාමය",
     "toolbar.step": "පියවර",
     "toolbar.stepBack": "පසුපසට",
     "toolbar.reset": "නැවත මුලට",

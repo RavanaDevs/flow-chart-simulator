@@ -9,6 +9,7 @@ const INSTANT_THRESHOLD_MS = 20;
 
 export function useRunner(speedMs: number) {
   const status = useRunStore((s) => s.state.status);
+  const isPlaying = useRunStore((s) => s.isPlaying);
   const stepCount = useRunStore((s) => s.state.stepCount);
   const tick = useRunStore((s) => s.tick);
   const tickBatch = useRunStore((s) => s.tickBatch);
@@ -26,9 +27,11 @@ export function useRunner(speedMs: number) {
     }
   }, [revision, status, resetRun]);
 
-  // Execute runner step tick loop
+  // Execute runner step tick loop. Gated on isPlaying, not on status alone —
+  // a hand-driven Step also leaves the interpreter 'running', and auto-advancing
+  // from there would run the whole program off a single click.
   useEffect(() => {
-    if (status !== "running") return;
+    if (!isPlaying || status !== "running") return;
 
     // "Instant" batches many steps per animation frame instead of paying a
     // React render per step.
@@ -44,5 +47,5 @@ export function useRunner(speedMs: number) {
     }, speedMs);
 
     return () => clearTimeout(timerId);
-  }, [status, stepCount, speedMs, tick, tickBatch]);
+  }, [isPlaying, status, stepCount, speedMs, tick, tickBatch]);
 }

@@ -50,6 +50,7 @@ const ALL_ERROR_CODES: ErrorCode[] = [
 
 const ALL_UI_KEYS: UiKey[] = [
   "toolbar.run",
+  "toolbar.pause",
   "toolbar.step",
   "toolbar.stepBack",
   "toolbar.reset",

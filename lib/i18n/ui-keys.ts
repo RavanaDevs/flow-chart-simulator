@@ -1,5 +1,6 @@
 export type UiKey =
   | "toolbar.run"
+  | "toolbar.pause"
   | "toolbar.step"
   | "toolbar.stepBack"
   | "toolbar.reset"

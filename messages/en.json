@@ -167,6 +167,7 @@
   },
   "ui": {
     "toolbar.run": "Run",
+    "toolbar.pause": "Pause",
     "toolbar.step": "Step",
     "toolbar.stepBack": "Step Back",
     "toolbar.reset": "Reset",

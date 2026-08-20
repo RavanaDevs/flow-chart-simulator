@@ -8,6 +8,7 @@ import { LocaleToggle } from "./locale-toggle";
 import { ThemeToggle } from "./theme-toggle";
 import {
   Play,
+  Pause,
   StepForward,
   RotateCcw,
   Undo2,
@@ -49,35 +50,48 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const { t, resolveMessage } = useT();
   const { nodes, edges, loadDocument, resetGraph } = useGraphStore();
   const [confirmNewOpen, setConfirmNewOpen] = useState(false);
-  const { state, history, loadProgram, tick, stepBack, resetRun } = useRunStore();
+  const { state, history, isPlaying, loadProgram, play, pause, tick, stepBack, resetRun } =
+    useRunStore();
   const { fitView } = useReactFlow();
+
+  const isMidRun =
+    state.status === "running" || state.status === "awaiting-input";
+  const isFinished = state.status === "finished" || state.status === "error";
 
   const handleReset = () => {
     resetRun();
     fitView({ duration: 400, padding: 0.2 });
   };
 
-  const handleRun = () => {
+  /**
+   * Compile and load, unless a run is already part-way through — Run and Step
+   * share one execution, so pressing Run after stepping by hand must continue
+   * from where the student stopped rather than start over.
+   */
+  const ensureProgram = (): boolean => {
+    if (isMidRun) return true;
+
     const cRes = compile({ nodes, edges });
     if (!cRes.ok) {
       const errRes = resolveMessage(cRes.diagnostics[0]);
       toast.error(errRes.message);
-      return;
+      return false;
     }
     loadProgram(cRes.program);
-    useRunStore.getState().tick();
+    return true;
+  };
+
+  const handleRun = () => {
+    if (isPlaying) {
+      pause();
+      return;
+    }
+    if (!ensureProgram()) return;
+    play();
   };
 
   const handleStep = () => {
-    if (state.status === "idle") {
-      const cRes = compile({ nodes, edges });
-      if (!cRes.ok) {
-        const errRes = resolveMessage(cRes.diagnostics[0]);
-        toast.error(errRes.message);
-        return;
-      }
-      loadProgram(cRes.program);
-    }
+    if (!ensureProgram()) return;
     tick();
   };
 
@@ -124,8 +138,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     toast.success(t("toast.cleared"));
   };
 
-  const isRunning = state.status === "running";
-
   return (
     <div className="flex h-12 w-full items-center justify-between border-b border-border bg-card px-4 shadow-sm">
       {/* Run / Execution Controls */}
@@ -133,18 +145,23 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <Button
           size="sm"
           onClick={handleRun}
-          disabled={isRunning}
           className="bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
         >
-          <Play className="mr-1.5 h-4 w-4 fill-current" />
-          {t("toolbar.run")}
+          {isPlaying ? (
+            <Pause className="mr-1.5 h-4 w-4 fill-current" />
+          ) : (
+            <Play className="mr-1.5 h-4 w-4 fill-current" />
+          )}
+          {isPlaying ? t("toolbar.pause") : t("toolbar.run")}
         </Button>
 
         <Button
           size="sm"
           variant="outline"
           onClick={handleStep}
-          disabled={isRunning || state.status === "finished" || state.status === "error"}
+          disabled={
+            isPlaying || isFinished || state.status === "awaiting-input"
+          }
         >
           <StepForward className="mr-1.5 h-4 w-4" />
           {t("toolbar.step")}
@@ -154,7 +171,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           size="sm"
           variant="outline"
           onClick={stepBack}
-          disabled={history.length === 0 || isRunning}
+          disabled={history.length === 0 || isPlaying}
           title={t("toolbar.stepBack")}
         >
           <Undo2 className="mr-1.5 h-4 w-4" />
