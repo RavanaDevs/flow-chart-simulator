@@ -123,7 +123,7 @@ const InnerEditorShell: React.FC<{
               <div className="flex-1">
                 <FlowCanvas />
               </div>
-              <div className="flex h-full w-10 shrink-0 flex-col items-center border-l border-border bg-card py-2">
+              <div className="flex h-full w-10 shrink-0 flex-col items-center gap-2 border-l border-border bg-card py-2">
                 <button
                   type="button"
                   onClick={() => setIsRailCollapsed(false)}
@@ -132,6 +132,23 @@ const InnerEditorShell: React.FC<{
                 >
                   <PanelRightOpen className="h-4 w-4" />
                 </button>
+
+                {errorCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRailCollapsed(false);
+                      setActiveTab("checks");
+                    }}
+                    className="relative flex h-7 w-7 items-center justify-center rounded-md text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                    title={`${errorCount} check issues — click to open Checks`}
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground shadow-sm">
+                      {errorCount}
+                    </span>
+                  </button>
+                )}
               </div>
             </>
           ) : (
