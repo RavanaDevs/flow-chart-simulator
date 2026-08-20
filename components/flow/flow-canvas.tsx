@@ -28,6 +28,7 @@ import {
 } from "@/lib/graph/handles";
 import { EDGE_COLORS } from "./constants";
 import { toast } from "sonner";
+import { VariableBar } from "./variable-bar";
 
 /**
  * Reuse the existing canvas node whenever nothing semantic changed, so a
@@ -114,8 +115,13 @@ export const FlowCanvas: React.FC = () => {
 
   const screenToFlowPosition = useReactFlow().screenToFlowPosition;
 
-  const [rfNodes, setRfNodes] = useState<Node[]>([]);
-  const [rfEdges, setRfEdges] = useState<Edge[]>([]);
+  // Seed the mirrors from the document rather than from an empty array. The
+  // sync below only fires when the store's identity *changes*, so a canvas that
+  // mounts when the document already exists — after a page refresh, or on the
+  // remount that collapsing the right rail causes — would otherwise render
+  // nothing at all until the next edit happened to change that identity.
+  const [rfNodes, setRfNodes] = useState<Node[]>(() => mergeNodes([], nodes));
+  const [rfEdges, setRfEdges] = useState<Edge[]>(() => mergeEdges([], edges));
 
   // Sync document -> canvas during render (React's "adjust state when a prop
   // changes" pattern) rather than in an effect, so the canvas never paints a
@@ -261,7 +267,7 @@ export const FlowCanvas: React.FC = () => {
 
   return (
     <div
-      className="h-full w-full bg-background"
+      className="relative h-full w-full bg-background overflow-hidden"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -284,6 +290,8 @@ export const FlowCanvas: React.FC = () => {
         <Background gap={GRID_SIZE} size={1} />
         <Controls />
       </ReactFlow>
+
+      <VariableBar />
     </div>
   );
 };

@@ -44,8 +44,19 @@ const GROWS: Record<NodeKind, boolean> = {
   connector: false,
 };
 
-/** Inset so the stroke is not clipped by the SVG viewBox. */
-const PAD = 2;
+/** Maps each node kind to its theme block color token name. */
+export const KIND_COLOR_TOKENS: Record<NodeKind, string> = {
+  start: "--block-start",
+  process: "--block-process",
+  input: "--block-input",
+  output: "--block-output",
+  if: "--block-if",
+  stop: "--block-stop",
+  connector: "--block-connector",
+};
+
+/** Inset so the stroke and outer ring are not clipped by the SVG viewBox. */
+const PAD = 4;
 
 /**
  * Extra height per line beyond the first. A whole SHAPE_UNIT, because a block

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useUiStore, LOCALE_STORAGE_KEY } from "@/stores/ui-store";
 import { Locale } from "@/lib/i18n/locale";
 import { cn } from "@/lib/utils";
@@ -8,10 +8,13 @@ import { Globe } from "lucide-react";
 
 export const LocaleToggle: React.FC = () => {
   const { locale, setLocale } = useUiStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
-    setMounted(true);
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;

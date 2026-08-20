@@ -14,14 +14,14 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
   switch (line.kind) {
     case "output":
       return (
-        <div className="font-mono text-sm font-semibold text-foreground leading-relaxed">
+        <div className="text-sm font-semibold text-foreground leading-relaxed">
           {line.text}
         </div>
       );
 
     case "prompt":
       return (
-        <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <ChevronRight className="h-3.5 w-3.5 text-primary" />
           <span>
             {t("panel.terminal.promptFor", {
@@ -34,7 +34,7 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
 
     case "echo":
       return (
-        <div className="pl-3 border-l-2 border-primary/50 font-mono text-xs font-medium text-muted-foreground">
+        <div className="pl-3 border-l-2 border-primary/50 text-xs font-medium text-muted-foreground">
           {line.text}
         </div>
       );
@@ -42,7 +42,7 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
     case "error": {
       const { message, hint } = resolveMessage(line.error);
       return (
-        <div className="my-1.5 rounded-md border border-destructive/30 bg-destructive/10 p-2.5 font-mono text-xs text-destructive">
+        <div className="my-1.5 rounded-md border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
           <div className="flex items-start gap-2 font-semibold">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{message}</span>
@@ -58,7 +58,7 @@ export const TerminalLine: React.FC<TerminalLineProps> = ({ line }) => {
 
     case "system":
       return (
-        <div className="flex items-center gap-1.5 py-0.5 font-mono text-xs italic text-muted-foreground">
+        <div className="flex items-center gap-1.5 py-0.5 text-xs italic text-muted-foreground">
           <Info className="h-3 w-3" />
           <span>
             {t(`panel.terminal.sys.${line.code}` as UiKey)}

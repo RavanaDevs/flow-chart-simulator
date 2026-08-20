@@ -30,19 +30,21 @@ export function provideInput(
     const trimmed = raw.trim();
     if (!/^-?\d+(\.\d+)?$/.test(trimmed)) {
       // A typo re-asks for the same name rather than killing the program.
+      const inputErr = {
+        code: "INPUT_NOT_A_NUMBER" as const,
+        params: { text: raw },
+        nodeId,
+      };
       const errLine: TerminalLine = {
         kind: "error",
-        error: {
-          code: "INPUT_NOT_A_NUMBER",
-          params: { text: raw },
-          nodeId,
-        },
+        error: inputErr,
       };
       const { lines, truncated } = appendTerminal(state.terminal, errLine);
       return {
         ...state,
         terminal: lines,
         terminalTruncated: state.terminalTruncated || truncated,
+        inputError: inputErr,
       };
     }
     parsedValue = parseFloat(trimmed);
@@ -72,6 +74,7 @@ export function provideInput(
       terminal: lines,
       terminalTruncated: state.terminalTruncated || truncated,
       pendingInput: { nodeId, varName: nextName, type, index: index + 1, total },
+      inputError: null,
     };
   }
 
@@ -85,5 +88,6 @@ export function provideInput(
     terminalTruncated: state.terminalTruncated || truncated,
     currentNodeId: currNode.next,
     lastEdgeId: currNode.nextEdgeId,
+    inputError: null,
   };
 }

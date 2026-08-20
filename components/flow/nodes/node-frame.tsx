@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
 import { AlertCircle, AlertTriangle, Trash2 } from "lucide-react";
 import { useGraphStore } from "@/stores/graph-store";
 
+import { compile } from "@/lib/graph/compile";
+import { useT } from "@/hooks/use-t";
+
 type NodeFrameProps = {
   id: string;
   kind: NodeKind;
@@ -25,14 +28,28 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   id,
   kind,
   isSelected,
-  severity,
-  diagnosticMsg,
+  severity: propSeverity,
+  diagnosticMsg: propDiagnosticMsg,
   label,
   lines = 1,
   children,
 }) => {
   const { width, height } = getShapeGeometry(kind, lines);
   const removeNode = useGraphStore((s) => s.removeNode);
+  const nodes = useGraphStore((s) => s.nodes);
+  const edges = useGraphStore((s) => s.edges);
+  const { resolveMessage } = useT();
+
+  const diagnostic = React.useMemo(() => {
+    if (propSeverity !== undefined) return null;
+    const cRes = compile({ nodes, edges });
+    const diags = cRes.ok ? cRes.program.warnings : cRes.diagnostics;
+    return diags.find((d) => d.nodeId === id) || null;
+  }, [nodes, edges, id, propSeverity]);
+
+  const severity = propSeverity ?? diagnostic?.severity ?? null;
+  const diagnosticMsg =
+    propDiagnosticMsg ?? (diagnostic ? resolveMessage(diagnostic).message : undefined);
 
   const isCurrent = useRunStore((s) => s.state.currentNodeId === id);
   const status = useRunStore((s) => s.state.status);

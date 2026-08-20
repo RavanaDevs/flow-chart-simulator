@@ -50,6 +50,7 @@ const ALL_ERROR_CODES: ErrorCode[] = [
 
 const ALL_UI_KEYS: UiKey[] = [
   "toolbar.run",
+  "toolbar.pause",
   "toolbar.step",
   "toolbar.stepBack",
   "toolbar.reset",
@@ -59,6 +60,9 @@ const ALL_UI_KEYS: UiKey[] = [
   "toolbar.speedFast",
   "toolbar.speedInstant",
   "toolbar.follow",
+  "toolbar.theme",
+  "toolbar.themeLight",
+  "toolbar.themeDark",
   "toolbar.new",
   "toolbar.export",
   "toolbar.import",
@@ -91,14 +95,13 @@ const ALL_UI_KEYS: UiKey[] = [
   "block.process",
   "block.decision",
   "block.connector",
-  "block.typeInTerminal",
   "block.inputPlaceholder",
   "block.outputPlaceholder",
   "block.processPlaceholder",
   "block.conditionPlaceholder",
-  "tab.terminal",
-  "tab.variables",
-  "tab.problems",
+  "tab.output",
+  "tab.values",
+  "tab.checks",
   "panel.terminal.empty",
   "panel.terminal.emptyDesc",
   "panel.terminal.clear",
@@ -120,7 +123,6 @@ const ALL_UI_KEYS: UiKey[] = [
   "toast.importFailed",
   "toast.cleared",
   "toast.exported",
-  "toast.inputPaused",
   "canvas.loading",
 ];
 

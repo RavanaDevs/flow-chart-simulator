@@ -177,6 +177,7 @@ export function step(program: Program, state: RunState): RunState {
           // Joined with nothing: the student controls spacing through their
           // own string literals, so what they type is what they get.
           text: parts.join(""),
+          nodeId: currNode.id,
         });
       }
 

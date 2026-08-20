@@ -9,7 +9,7 @@ export type SystemCode =
   | "OUTPUT_TRUNCATED";
 
 export type TerminalLine =
-  | { kind: "output"; text: string }
+  | { kind: "output"; text: string; nodeId: NodeId }
   | { kind: "prompt"; varName: string; valueType: InputValueType }
   | { kind: "echo"; text: string }
   | { kind: "error"; error: RunError }
@@ -31,6 +31,7 @@ export type RunState = {
     total: number;
   } | null;
   error: RunError | null;
+  inputError: RunError | null;
   stepCount: number;
   recentNodeIds: readonly NodeId[];
   terminalTruncated: boolean;
@@ -45,6 +46,7 @@ export function initialState(): RunState {
     terminal: [],
     pendingInput: null,
     error: null,
+    inputError: null,
     stepCount: 0,
     recentNodeIds: [],
     terminalTruncated: false,

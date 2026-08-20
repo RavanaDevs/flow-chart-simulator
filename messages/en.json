@@ -167,6 +167,7 @@
   },
   "ui": {
     "toolbar.run": "Run",
+    "toolbar.pause": "Pause",
     "toolbar.step": "Step",
     "toolbar.stepBack": "Step Back",
     "toolbar.reset": "Reset",
@@ -176,6 +177,9 @@
     "toolbar.speedFast": "2x (Fast)",
     "toolbar.speedInstant": "Instant",
     "toolbar.follow": "Follow Node",
+    "toolbar.theme": "Theme",
+    "toolbar.themeLight": "Light",
+    "toolbar.themeDark": "Dark",
     "toolbar.new": "New",
     "toolbar.export": "Export",
     "toolbar.import": "Import",
@@ -208,14 +212,13 @@
     "block.process": "Process",
     "block.decision": "Decision (If)",
     "block.connector": "Connector",
-    "block.typeInTerminal": "Type in Terminal",
     "block.inputPlaceholder": "name, name",
     "block.outputPlaceholder": "expression",
     "block.processPlaceholder": "x = 1",
     "block.conditionPlaceholder": "condition",
-    "tab.terminal": "Terminal",
-    "tab.variables": "Variables",
-    "tab.problems": "Problems",
+    "tab.output": "Output",
+    "tab.values": "Values",
+    "tab.checks": "Checks",
     "panel.terminal.empty": "Terminal log is empty",
     "panel.terminal.emptyDesc": "Click Run or Step to execute your flowchart",
     "panel.terminal.clear": "Clear",
@@ -237,7 +240,6 @@
     "toast.importFailed": "Import failed: {error}",
     "toast.cleared": "Canvas cleared. A fresh Start block is ready.",
     "toast.exported": "Flowchart exported to file.",
-    "toast.inputPaused": "Execution paused at Input block. Type your value in the Terminal prompt to resume.",
     "canvas.loading": "Loading Flowchart Canvas..."
   }
 }

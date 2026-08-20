@@ -26,7 +26,7 @@ Package manager is **pnpm**. Add shadcn components with `pnpm dlx shadcn@latest 
 
 ## Architecture
 
-A visual flowchart simulator for grade 8–9 ICT students: draw a flowchart, press Run, watch it execute with a highlighted block, an animated edge, and a terminal panel.
+A visual flowchart simulator for grade 8–9 ICT students: draw a flowchart, press Run, watch it execute with a highlighted block and an animated edge. Input is typed on the block that asks for it and output appears on the block that printed it; a collapsible record panel keeps the full transcript.
 
 The pipeline is one direction:
 
@@ -44,7 +44,7 @@ FlowGraph (document)  ──compile()──▶  Program (parsed ASTs, resolved n
 These are load-bearing; several are enforced mechanically.
 
 1. **`lib/` is pure TypeScript — no React, no DOM, no `@xyflow`.** The whole language and interpreter run headless under vitest. Enforced by `no-restricted-imports` and `no-restricted-globals` scoped to `lib/**` in `eslint.config.mjs`.
-2. **Errors are structured objects, never strings.** `RunError` is a discriminated union over `ErrorCode` in `lib/errors/codes.ts`, so `params` is type-checked per code. User-facing text lives only in `messages/en.json` and is produced by `resolveMessage()` in `lib/i18n/resolve.ts`. The product is bilingual (English + Sinhala) later; `si.json` does not exist yet.
+2. **Errors are structured objects, never strings.** `RunError` is a discriminated union over `ErrorCode` in `lib/errors/codes.ts`, so `params` is type-checked per code. User-facing text lives only in `messages/en.json` and `messages/si.json`, and is produced by `resolveMessage()` in `lib/i18n/resolve.ts`. Both catalogues ship. `lib/i18n/parity.test.ts` fails on a missing *or* orphaned key in either direction, so adding, renaming or removing a key touches four places together: `ui-keys.ts`, the test's `ALL_UI_KEYS` list, `en.json` and `si.json`.
 3. **`step()` is pure** — `(program, state) => state`. No mutation, no async, no side effects. Guarded by a deepFreeze test in `lib/run/step.test.ts`.
 4. **No `eval()` / `new Function()`.** Enforced repo-wide by lint.
 5. **The graph is never mutated during execution.** `stores/run-store.ts` imports only zustand and `lib/` — it has no path to a graph setter. Compilation is triggered in `hooks/use-runner.ts` / the toolbar, which hand `load(program)` a finished `Program`.
@@ -82,7 +82,7 @@ Each of these has already caused a real bug.
 
 Touches more places than expected; `tsc` catches some but not all:
 
-`lib/graph/types.ts` (kind + data) → `lib/graph/handles.ts` (`TARGET_PORTS`, `SOURCE_PORTS`) → `components/flow/shapes/geometry.ts` (`SIZES`, `GROWS`, path) → `lib/graph/program.ts` (`CompiledNode`) → `lib/graph/compile.ts` (**`parsedData` registration** + emission) → `lib/run/step.ts` (switch case; exhaustiveness fails the build) → `components/flow/node-types.ts` → `components/editor/palette.tsx` → `lib/persistence/validate-import.ts` (`VALID_KINDS`).
+`lib/graph/types.ts` (kind + data) → `lib/graph/handles.ts` (`TARGET_PORTS`, `SOURCE_PORTS`) → `components/flow/shapes/geometry.ts` (`SIZES`, `GROWS`, `KIND_COLOR_TOKENS`, path) → `lib/graph/program.ts` (`CompiledNode`) → `lib/graph/compile.ts` (**`parsedData` registration** + emission) → `lib/run/step.ts` (switch case; exhaustiveness fails the build) → `components/flow/node-types.ts` → `components/editor/palette.tsx` → `lib/persistence/validate-import.ts` (`VALID_KINDS`).
 
 ## Language
 
@@ -108,7 +108,7 @@ Headless `lib/` work is tested first and carries most of the suite.
 
 ## Known dead ends
 
-`NodeFrame` accepts `severity` / `diagnosticMsg` and renders a badge and a coloured outline for them, but **no node component ever passes them** — on-canvas validation annotations are unwired, and diagnostics only reach the user through `components/panels/problems-panel.tsx`. Wiring it means mapping `compile()` diagnostics by `nodeId` and threading them down; the rendering already exists.
+**`NodeFrame` compiles the whole graph once per node.** On-canvas diagnostics are wired now, but `NodeFrame` resolves them by calling `compile({ nodes, edges })` inside its own `useMemo` rather than receiving them from a parent. `nodes` changes identity on every edit, so a canvas of N blocks runs N full compiles per keystroke, plus one more in `editor-shell.tsx`. Fine at classroom sizes; the fix if it ever bites is to compile once at the shell and pass a `Map<NodeId, Diagnostic>` down, not to memoise harder inside the node.
 
 `NO_STOP` is declared in `codes.ts` and has an `en.json` entry but is never emitted (`NO_REACHABLE_STOP` is used instead).
 

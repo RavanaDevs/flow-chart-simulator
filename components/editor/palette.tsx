@@ -4,7 +4,7 @@ import { useGraphStore } from "@/stores/graph-store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getShapeSize, countLines } from "@/components/flow/shapes/geometry";
+import { getShapeSize, countLines, KIND_COLOR_TOKENS } from "@/components/flow/shapes/geometry";
 import { GRID_SIZE } from "@/lib/graph/grid";
 import { useT } from "@/hooks/use-t";
 import { UiKey } from "@/lib/i18n/ui-keys";
@@ -22,43 +22,43 @@ const ITEMS: PaletteItemConfig[] = [
     kind: "start",
     labelKey: "palette.block.start",
     descKey: "palette.block.startDesc",
-    icon: <Play className="h-4 w-4 text-emerald-500" />,
+    icon: <Play className="h-4 w-4" />,
   },
   {
     kind: "process",
     labelKey: "palette.block.process",
     descKey: "palette.block.processDesc",
-    icon: <Cpu className="h-4 w-4 text-blue-500" />,
+    icon: <Cpu className="h-4 w-4" />,
   },
   {
     kind: "input",
     labelKey: "palette.block.input",
     descKey: "palette.block.inputDesc",
-    icon: <ArrowDownToLine className="h-4 w-4 text-purple-500" />,
+    icon: <ArrowDownToLine className="h-4 w-4" />,
   },
   {
     kind: "output",
     labelKey: "palette.block.output",
     descKey: "palette.block.outputDesc",
-    icon: <ArrowUpFromLine className="h-4 w-4 text-cyan-500" />,
+    icon: <ArrowUpFromLine className="h-4 w-4" />,
   },
   {
     kind: "if",
     labelKey: "palette.block.decision",
     descKey: "palette.block.decisionDesc",
-    icon: <GitFork className="h-4 w-4 text-amber-500" />,
+    icon: <GitFork className="h-4 w-4" />,
   },
   {
     kind: "connector",
     labelKey: "palette.block.connector",
     descKey: "palette.block.connectorDesc",
-    icon: <CircleDot className="h-4 w-4 text-slate-400" />,
+    icon: <CircleDot className="h-4 w-4" />,
   },
   {
     kind: "stop",
     labelKey: "palette.block.stop",
     descKey: "palette.block.stopDesc",
-    icon: <Square className="h-4 w-4 text-red-500" />,
+    icon: <Square className="h-4 w-4" />,
   },
 ];
 
@@ -130,6 +130,9 @@ export const Palette: React.FC = () => {
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background",
                   !disabled && "group-hover:border-primary"
                 )}
+                style={{
+                  color: `var(${KIND_COLOR_TOKENS[item.kind]})`,
+                }}
               >
                 {item.icon}
               </div>

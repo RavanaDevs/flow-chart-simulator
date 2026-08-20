@@ -3,7 +3,6 @@
 import React, { useRef, useEffect } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { TerminalLine } from "./terminal-line";
-import { TerminalPrompt } from "./terminal-prompt";
 import { useT } from "@/hooks/use-t";
 import { Terminal as TerminalIcon, ChevronsUp } from "lucide-react";
 
@@ -47,8 +46,6 @@ export const TerminalPanel: React.FC = () => {
       ) : (
         terminal.map((line, idx) => <TerminalLine key={idx} line={line} />)
       )}
-
-      <TerminalPrompt />
     </div>
   );
 };

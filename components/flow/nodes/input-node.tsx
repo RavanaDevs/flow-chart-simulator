@@ -3,30 +3,22 @@ import { NodeProps } from "@xyflow/react";
 import { NodeFrame } from "./node-frame";
 import { ExpressionField } from "./expression-field";
 import { countLines } from "../shapes/geometry";
-import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
 import { useT } from "@/hooks/use-t";
 import { InputValueType } from "@/lib/graph/types";
 
+import { BlockPrompt } from "./block-prompt";
+
 export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
   const { t } = useT();
-  const currentNodeId = useRunStore((s) => s.state.currentNodeId);
-  const status = useRunStore((s) => s.state.status);
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
-
-  const isActive = currentNodeId === id;
-  const isAwaiting = isActive && status === "awaiting-input";
 
   const names = (data as { names?: string }).names ?? "x";
   const valueType = ((data as { valueType?: InputValueType }).valueType ?? "number") as InputValueType;
 
   return (
     <NodeFrame id={id} kind="input" isSelected={selected} lines={countLines(names)}>
-      {isAwaiting && (
-        <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-lg animate-bounce whitespace-nowrap">
-          <span>{t("block.typeInTerminal")}</span> ↵
-        </div>
-      )}
+      <BlockPrompt nodeId={id} />
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-muted-foreground">
           <span>{t("block.input")}</span>
