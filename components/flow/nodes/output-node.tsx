@@ -15,14 +15,27 @@ export const OutputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
 
   const source = (data as { source?: string }).source ?? `"Hello"`;
 
-  const lastOutput = React.useMemo(() => {
+  const nodeOutputLines = React.useMemo(() => {
+    let lastIdx = -1;
     for (let i = terminal.length - 1; i >= 0; i--) {
       const line = terminal[i];
       if (line.kind === "output" && line.nodeId === id) {
-        return line.text;
+        lastIdx = i;
+        break;
       }
     }
-    return null;
+    if (lastIdx === -1) return null;
+
+    const lines: string[] = [];
+    for (let i = lastIdx; i >= 0; i--) {
+      const line = terminal[i];
+      if (line.kind === "output" && line.nodeId === id) {
+        lines.unshift(line.text);
+      } else {
+        break;
+      }
+    }
+    return lines.length > 0 ? lines : null;
   }, [terminal, id]);
 
   return (
@@ -39,12 +52,23 @@ export const OutputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
         />
       </div>
 
-      {lastOutput !== null && (
-        <div className="nodrag nowheel absolute -bottom-8 left-1/2 -translate-x-1/2 z-40 flex max-w-[220px] items-center gap-1.5 rounded-md border border-cyan-500/40 bg-card px-2.5 py-1 text-xs font-mono font-semibold text-foreground shadow-md backdrop-blur">
-          <span className="text-[10px] font-bold uppercase text-cyan-600 dark:text-cyan-400 shrink-0">
-            out:
-          </span>
-          <span className="truncate">{lastOutput}</span>
+      {nodeOutputLines !== null && (
+        <div className="nodrag nowheel absolute -top-2 left-full ml-4 z-40 flex w-56 flex-col gap-1 rounded-xl border border-cyan-500/40 bg-card p-2.5 text-xs font-mono shadow-xl backdrop-blur">
+          <div className="flex items-center justify-between border-b border-border/50 pb-1 text-[10px] font-bold uppercase text-cyan-600 dark:text-cyan-400">
+            <span>out</span>
+            {nodeOutputLines.length > 1 && (
+              <span className="text-[9px] font-normal text-muted-foreground">
+                {nodeOutputLines.length} lines
+              </span>
+            )}
+          </div>
+          <div className="flex max-h-36 flex-col gap-0.5 overflow-y-auto whitespace-pre-wrap break-words text-[11px] font-semibold text-foreground">
+            {nodeOutputLines.map((lineText, idx) => (
+              <div key={idx} className="leading-snug">
+                {lineText}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </NodeFrame>
