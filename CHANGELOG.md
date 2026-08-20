@@ -18,6 +18,13 @@ removing that borrowed constraint. See `docs/PLAN-V3.md` for the full reasoning.
 
 ### Added
 
+- **A worked example on first load.** The canvas opens on a pass/fail grade check —
+  read a mark, branch on it, print one of two words, merge and stop — rather than on a
+  lone Start block. It is the smallest chart that shows a decision with both exits used
+  and a connector doing its job. **New** still clears to an empty canvas, and a returning
+  student's autosaved work still replaces it. `lib/graph/starter.test.ts` compiles and
+  runs it on every test run, so the first thing a beginner sees can never greet them with
+  an error they did not cause.
 - **Input prompts on the block.** A new `BlockPrompt` attaches to the Input block that is
   asking, showing the variable name, the expected type, and `n/total` progress when a
   block holds several names. The student never looks away from the block to answer it.
