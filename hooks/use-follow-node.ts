@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
 import { useReactFlow } from "@xyflow/react";
@@ -11,7 +11,16 @@ export function useFollowNode(enabled: boolean) {
   const currentNodeId = useRunStore((s) => s.state.currentNodeId);
   const status = useRunStore((s) => s.state.status);
   const nodes = useGraphStore((s) => s.nodes);
-  const { setCenter, getZoom } = useReactFlow();
+  const { setCenter, getZoom, fitView } = useReactFlow();
+
+  const prevStatusRef = useRef(status);
+
+  useEffect(() => {
+    if (status === "idle" && prevStatusRef.current !== "idle") {
+      fitView({ duration: 400, padding: 0.2 });
+    }
+    prevStatusRef.current = status;
+  }, [status, fitView]);
 
   useEffect(() => {
     if (!enabled || !currentNodeId) return;

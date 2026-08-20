@@ -31,6 +31,8 @@ import { AUTOSAVE_KEY } from "@/hooks/use-autosave";
 import { toast } from "sonner";
 import { exportDocument, importDocument } from "@/lib/persistence/document";
 
+import { useReactFlow } from "@xyflow/react";
+
 type ToolbarProps = {
   speedMs: number;
   setSpeedMs: (speed: number) => void;
@@ -48,6 +50,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const { nodes, edges, loadDocument, resetGraph } = useGraphStore();
   const [confirmNewOpen, setConfirmNewOpen] = useState(false);
   const { state, history, loadProgram, tick, stepBack, resetRun } = useRunStore();
+  const { fitView } = useReactFlow();
+
+  const handleReset = () => {
+    resetRun();
+    fitView({ duration: 400, padding: 0.2 });
+  };
 
   const handleRun = () => {
     const cRes = compile({ nodes, edges });
@@ -156,7 +164,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <Button
           size="sm"
           variant="ghost"
-          onClick={resetRun}
+          onClick={handleReset}
           disabled={state.status === "idle" && history.length === 0}
         >
           <RotateCcw className="mr-1.5 h-4 w-4" />
