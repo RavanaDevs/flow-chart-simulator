@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { FlowNode, FlowEdge, NodeId, EdgeId, NodeKind } from "@/lib/graph/types";
 import { snapPosition } from "@/lib/graph/grid";
 import { branchOf } from "@/lib/graph/handles";
+import { starterDocument } from "@/lib/graph/starter";
 
 export type GraphState = {
   nodes: FlowNode[];
@@ -25,6 +26,11 @@ export type GraphState = {
   resetGraph: () => void;
 };
 
+/**
+ * What New clears to. Deliberately not the starter document — asking for a new
+ * flowchart is asking for an empty one, so `resetGraph` leaves a bare Start
+ * block and nothing else.
+ */
 const DEFAULT_START_NODE: FlowNode = {
   id: "start-node-1",
   kind: "start",
@@ -32,9 +38,14 @@ const DEFAULT_START_NODE: FlowNode = {
   data: {},
 };
 
+const STARTER = starterDocument();
+
 export const useGraphStore = create<GraphState>((set, get) => ({
-  nodes: [DEFAULT_START_NODE],
-  edges: [],
+  // A worked example on first load, so the canvas is never blank for someone
+  // who does not yet know what to put on it. A returning student's autosave
+  // replaces this on mount (see hooks/use-autosave.ts).
+  nodes: STARTER.nodes,
+  edges: STARTER.edges,
   selectedId: null,
   revision: 1,
 

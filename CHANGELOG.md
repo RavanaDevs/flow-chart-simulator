@@ -18,6 +18,13 @@ removing that borrowed constraint. See `docs/PLAN-V3.md` for the full reasoning.
 
 ### Added
 
+- **A worked example on first load.** The canvas opens on a pass/fail grade check —
+  read a mark, branch on it, print one of two words, merge and stop — rather than on a
+  lone Start block. It is the smallest chart that shows a decision with both exits used
+  and a connector doing its job. **New** still clears to an empty canvas, and a returning
+  student's autosaved work still replaces it. `lib/graph/starter.test.ts` compiles and
+  runs it on every test run, so the first thing a beginner sees can never greet them with
+  an error they did not cause.
 - **Input prompts on the block.** A new `BlockPrompt` attaches to the Input block that is
   asking, showing the variable name, the expected type, and `n/total` progress when a
   block holds several names. The student never looks away from the block to answer it.
@@ -69,6 +76,13 @@ removing that borrowed constraint. See `docs/PLAN-V3.md` for the full reasoning.
 
 ### Fixed
 
+- **The light default never applied to anyone who had opened the app before.** A theme
+  stored by `next-themes` always beats `defaultTheme`, and every browser that visited
+  while the app still ran `defaultTheme="system"` had `"system"` or `"dark"` written under
+  the library's default `"theme"` key — so those students stayed on dark permanently, on a
+  build that had already switched to light. The theme now persists under
+  `flowchart-sim:theme`, alongside the document and locale keys, which retires every stale
+  value at once. Changing the theme still persists as before.
 - **`font-mono` resolved to the wrong font, and broke Sinhala.** `--font-mono` was never
   mapped in the `@theme inline` block, so Tailwind fell back to its own stack: `Geist_Mono`
   was downloaded on every page load and never used, and every Sinhala string inside a

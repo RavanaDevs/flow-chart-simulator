@@ -82,7 +82,9 @@ pnpm install
 pnpm dev
 ```
 
-Then open http://localhost:3000. Everything runs in the browser — no backend, no accounts. Work autosaves to `localStorage`, and can be exported and imported as JSON.
+Then open http://localhost:3000. The canvas opens on a worked example — a pass/fail grade check — so there is something to press **Run** on immediately. **New** clears to an empty canvas, and your own work replaces the example once you have any.
+
+Everything runs in the browser — no backend, no accounts. Work autosaves to `localStorage`, and can be exported and imported as JSON.
 
 ## Scripts
 
