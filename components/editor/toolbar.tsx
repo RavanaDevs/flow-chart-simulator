@@ -5,6 +5,7 @@ import { useRunStore } from "@/stores/run-store";
 import { compile } from "@/lib/graph/compile";
 import { useT } from "@/hooks/use-t";
 import { LocaleToggle } from "./locale-toggle";
+import { ThemeToggle } from "./theme-toggle";
 import {
   Play,
   StepForward,
@@ -125,7 +126,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           size="sm"
           onClick={handleRun}
           disabled={isRunning}
-          className="bg-emerald-600 font-semibold text-white hover:bg-emerald-700"
+          className="bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
         >
           <Play className="mr-1.5 h-4 w-4 fill-current" />
           {t("toolbar.run")}
@@ -191,7 +192,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           {t("toolbar.follow")}
         </Button>
 
-        {/* Locale Toggle */}
+        {/* Theme & Locale Toggles */}
+        <ThemeToggle />
         <LocaleToggle />
 
         {/* Persistence Actions */}
