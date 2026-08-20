@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeKind } from "@/lib/graph/types";
-import { getShapeGeometry } from "./geometry";
+import { getShapeGeometry, KIND_COLOR_TOKENS } from "./geometry";
 import { cn } from "@/lib/utils";
 
 /** Where execution is, relative to this block. */
@@ -24,6 +24,8 @@ export const ShapeSvg: React.FC<ShapeSvgProps> = ({
   className,
 }) => {
   const { width, height, pathD } = getShapeGeometry(kind, lines);
+  const tokenVar = KIND_COLOR_TOKENS[kind];
+  const showRing = isSelected || Boolean(runPhase);
 
   return (
     <svg
@@ -36,24 +38,37 @@ export const ShapeSvg: React.FC<ShapeSvgProps> = ({
       viewBox={`0 0 ${width} ${height}`}
       fill="none"
     >
+      {/* Outer Ring Path (drawn underneath) */}
+      {showRing && (
+        <path
+          d={pathD}
+          className={cn(
+            "fill-none transition-all pointer-events-none",
+            runPhase === "active" && "stroke-primary stroke-[6px] animate-pulse opacity-80",
+            runPhase === "finished" && "stroke-emerald-500 stroke-[6px] animate-node-settle opacity-80",
+            runPhase === "failed" && "stroke-destructive stroke-[6px] animate-node-settle opacity-80",
+            !runPhase && isSelected && "stroke-primary stroke-[1.5px]"
+          )}
+        />
+      )}
+
+      {/* Main Shape Path */}
       <path
         d={pathD}
         className={cn(
-          "fill-card stroke-border stroke-2 transition-all",
-          // A junction is a point on the path, so it is drawn solid.
-          kind === "connector" && "fill-muted-foreground stroke-muted-foreground",
-          isSelected && "stroke-primary stroke-[2.5px] drop-shadow-md",
-          // Running pulses; finished and failed settle. A continuous pulse on
-          // a program that has ended reads as "still working".
-          runPhase === "active" &&
-            "fill-primary/10 stroke-primary stroke-[3px] animate-pulse",
-          runPhase === "finished" &&
-            "animate-node-settle fill-emerald-500/10 stroke-emerald-500 stroke-[3px]",
-          runPhase === "failed" &&
-            "animate-node-settle fill-destructive/10 stroke-destructive stroke-[3px]",
+          "stroke-2 transition-all",
+          isSelected && "stroke-[2.5px] drop-shadow-md",
+          runPhase === "failed" && "stroke-destructive stroke-[3px]",
           severity === "error" && "stroke-destructive stroke-[2.5px] [stroke-dasharray:4_2]",
           severity === "warning" && "stroke-amber-500 stroke-[2.5px]"
         )}
+        style={{
+          stroke:
+            runPhase === "failed" || severity === "error" || severity === "warning"
+              ? undefined
+              : `var(${tokenVar})`,
+          fill: `color-mix(in oklch, var(${tokenVar}) 12%, var(--card))`,
+        }}
       />
     </svg>
   );

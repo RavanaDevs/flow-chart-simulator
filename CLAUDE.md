@@ -82,7 +82,7 @@ Each of these has already caused a real bug.
 
 Touches more places than expected; `tsc` catches some but not all:
 
-`lib/graph/types.ts` (kind + data) → `lib/graph/handles.ts` (`TARGET_PORTS`, `SOURCE_PORTS`) → `components/flow/shapes/geometry.ts` (`SIZES`, `GROWS`, path) → `lib/graph/program.ts` (`CompiledNode`) → `lib/graph/compile.ts` (**`parsedData` registration** + emission) → `lib/run/step.ts` (switch case; exhaustiveness fails the build) → `components/flow/node-types.ts` → `components/editor/palette.tsx` → `lib/persistence/validate-import.ts` (`VALID_KINDS`).
+`lib/graph/types.ts` (kind + data) → `lib/graph/handles.ts` (`TARGET_PORTS`, `SOURCE_PORTS`) → `components/flow/shapes/geometry.ts` (`SIZES`, `GROWS`, `KIND_COLOR_TOKENS`, path) → `lib/graph/program.ts` (`CompiledNode`) → `lib/graph/compile.ts` (**`parsedData` registration** + emission) → `lib/run/step.ts` (switch case; exhaustiveness fails the build) → `components/flow/node-types.ts` → `components/editor/palette.tsx` → `lib/persistence/validate-import.ts` (`VALID_KINDS`).
 
 ## Language
 
