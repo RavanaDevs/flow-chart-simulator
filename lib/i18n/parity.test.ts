@@ -94,7 +94,6 @@ const ALL_UI_KEYS: UiKey[] = [
   "block.process",
   "block.decision",
   "block.connector",
-  "block.typeInTerminal",
   "block.inputPlaceholder",
   "block.outputPlaceholder",
   "block.processPlaceholder",
@@ -123,7 +122,6 @@ const ALL_UI_KEYS: UiKey[] = [
   "toast.importFailed",
   "toast.cleared",
   "toast.exported",
-  "toast.inputPaused",
   "canvas.loading",
 ];
 

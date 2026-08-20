@@ -211,7 +211,6 @@
     "block.process": "Process",
     "block.decision": "Decision (If)",
     "block.connector": "Connector",
-    "block.typeInTerminal": "Type in Terminal",
     "block.inputPlaceholder": "name, name",
     "block.outputPlaceholder": "expression",
     "block.processPlaceholder": "x = 1",
@@ -240,7 +239,6 @@
     "toast.importFailed": "Import failed: {error}",
     "toast.cleared": "Canvas cleared. A fresh Start block is ready.",
     "toast.exported": "Flowchart exported to file.",
-    "toast.inputPaused": "Execution paused at Input block. Type your value in the Terminal prompt to resume.",
     "canvas.loading": "Loading Flowchart Canvas..."
   }
 }

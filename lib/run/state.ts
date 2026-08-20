@@ -31,6 +31,7 @@ export type RunState = {
     total: number;
   } | null;
   error: RunError | null;
+  inputError: RunError | null;
   stepCount: number;
   recentNodeIds: readonly NodeId[];
   terminalTruncated: boolean;
@@ -45,6 +46,7 @@ export function initialState(): RunState {
     terminal: [],
     pendingInput: null,
     error: null,
+    inputError: null,
     stepCount: 0,
     recentNodeIds: [],
     terminalTruncated: false,

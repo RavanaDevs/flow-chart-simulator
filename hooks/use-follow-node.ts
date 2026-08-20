@@ -5,8 +5,11 @@ import { useRunStore } from "@/stores/run-store";
 import { useGraphStore } from "@/stores/graph-store";
 import { useReactFlow } from "@xyflow/react";
 
+const MIN_ASK_ZOOM = 0.75;
+
 export function useFollowNode(enabled: boolean) {
   const currentNodeId = useRunStore((s) => s.state.currentNodeId);
+  const status = useRunStore((s) => s.state.status);
   const nodes = useGraphStore((s) => s.nodes);
   const { setCenter, getZoom } = useReactFlow();
 
@@ -16,9 +19,15 @@ export function useFollowNode(enabled: boolean) {
     const currNode = nodes.find((n) => n.id === currentNodeId);
     if (!currNode) return;
 
+    const currentZoom = getZoom() || 1;
+    const targetZoom =
+      status === "awaiting-input"
+        ? Math.max(currentZoom, MIN_ASK_ZOOM)
+        : currentZoom;
+
     setCenter(currNode.position.x + 90, currNode.position.y + 30, {
-      zoom: getZoom() || 1,
+      zoom: targetZoom,
       duration: 300,
     });
-  }, [currentNodeId, enabled, nodes, setCenter, getZoom]);
+  }, [currentNodeId, status, enabled, nodes, setCenter, getZoom]);
 }

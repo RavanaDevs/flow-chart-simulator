@@ -211,7 +211,6 @@
     "block.process": "ක්‍රියාවලිය",
     "block.decision": "තීරණය (If)",
     "block.connector": "සම්බන්ධකය",
-    "block.typeInTerminal": "ටර්මිනලයේ ටයිප් කරන්න",
     "block.inputPlaceholder": "නම, නම",
     "block.outputPlaceholder": "ප්‍රකාශනය",
     "block.processPlaceholder": "x = 1",
@@ -240,7 +239,6 @@
     "toast.importFailed": "ආනයනය අසාර්ථකයි: {error}",
     "toast.cleared": "කැන්වසය හිස් කරන ලදී. නව ආරම්භය බ්ලොක් එකක් සූදානම්.",
     "toast.exported": "ගැලීම් සටහන ගොනුවකට අපනයනය කරන ලදී.",
-    "toast.inputPaused": "ආදානය බ්ලොක් එක ළඟ ධාවනය නැවතුණි. නැවත ආරම්භ කිරීමට ටර්මිනලයේ අගය ටයිප් කරන්න.",
     "canvas.loading": "ගැලීම් සටහන් කැන්වසය පූරණය වෙමින් පවතී..."
   }
 }

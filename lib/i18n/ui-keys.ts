@@ -44,7 +44,6 @@ export type UiKey =
   | "block.process"
   | "block.decision"
   | "block.connector"
-  | "block.typeInTerminal"
   | "block.inputPlaceholder"
   | "block.outputPlaceholder"
   | "block.processPlaceholder"
@@ -73,5 +72,4 @@ export type UiKey =
   | "toast.importFailed"
   | "toast.cleared"
   | "toast.exported"
-  | "toast.inputPaused"
   | "canvas.loading";

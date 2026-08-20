@@ -256,6 +256,26 @@ describe("Interpreter & Step Engine", () => {
     expect(state.pendingInput?.varName).toBe("qty");
   });
 
+  it("sets inputError on invalid number input and clears it on valid input", () => {
+    const cRes = compile(FIXTURES.multiLine);
+    if (!cRes.ok) return;
+
+    let state = initialState();
+    while (state.status !== "awaiting-input") state = step(cRes.program, state);
+
+    expect(state.inputError).toBeNull();
+
+    // Submit invalid string for number input
+    state = provideInput(cRes.program, state, "abc");
+    expect(state.inputError).not.toBeNull();
+    expect(state.inputError?.code).toBe("INPUT_NOT_A_NUMBER");
+    expect(state.status).toBe("awaiting-input");
+
+    // Submit valid number input
+    state = provideInput(cRes.program, state, "200");
+    expect(state.inputError).toBeNull();
+  });
+
   it("prints one terminal line per line of an Output block", () => {
     const cRes = compile(FIXTURES.receipt);
     expect(cRes.ok).toBe(true);
