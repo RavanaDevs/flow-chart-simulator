@@ -28,6 +28,7 @@ import {
 } from "@/lib/graph/handles";
 import { EDGE_COLORS } from "./constants";
 import { toast } from "sonner";
+import { VariableBar } from "./variable-bar";
 
 /**
  * Reuse the existing canvas node whenever nothing semantic changed, so a
@@ -266,7 +267,7 @@ export const FlowCanvas: React.FC = () => {
 
   return (
     <div
-      className="h-full w-full bg-background"
+      className="relative h-full w-full bg-background overflow-hidden"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -289,6 +290,8 @@ export const FlowCanvas: React.FC = () => {
         <Background gap={GRID_SIZE} size={1} />
         <Controls />
       </ReactFlow>
+
+      <VariableBar />
     </div>
   );
 };
