@@ -47,6 +47,7 @@ export const BlockPrompt: React.FC<BlockPromptProps> = ({ nodeId }) => {
   return (
     <div
       aria-live="assertive"
+      data-block-overlay="prompt"
       className="nodrag nowheel absolute -top-3 left-full ml-4 z-50 flex w-56 flex-col gap-2 rounded-xl border border-primary/30 bg-card p-3 shadow-xl backdrop-blur"
     >
       <div className="flex items-center justify-between text-xs">

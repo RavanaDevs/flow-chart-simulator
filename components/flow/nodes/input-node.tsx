@@ -17,8 +17,13 @@ export const InputNode: React.FC<NodeProps> = ({ id, selected, data }) => {
   const valueType = ((data as { valueType?: InputValueType }).valueType ?? "number") as InputValueType;
 
   return (
-    <NodeFrame id={id} kind="input" isSelected={selected} lines={countLines(names)}>
-      <BlockPrompt nodeId={id} />
+    <NodeFrame
+      id={id}
+      kind="input"
+      isSelected={selected}
+      lines={countLines(names)}
+      overlay={<BlockPrompt nodeId={id} />}
+    >
       <div className="flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-muted-foreground">
           <span>{t("block.input")}</span>

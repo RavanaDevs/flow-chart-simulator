@@ -189,3 +189,28 @@
   color: inherit !important;
   width: auto !important;
 }
+
+/*
+ * Keep the input prompt and the printed-output box above every other block.
+ *
+ * Both bubbles hang off the right edge of their block, so a block sitting next
+ * to them overlaps. They cannot win that with a z-index of their own: React
+ * Flow gives every .react-flow__node an inline z-index, which makes each node
+ * its own stacking context, and a child can never escape one. The whole node
+ * has to be lifted instead.
+ *
+ * :has() keeps the lift tied to a bubble that is actually on screen — both
+ * overlays render null when there is nothing to show. !important is what beats
+ * the inline z-index, and the values clear the 1000 React Flow hands a selected
+ * node. Node wrappers live inside .react-flow__viewport, which is a stacking
+ * context of its own, so these stay safely under the Controls and panels.
+ */
+.react-flow__node:has([data-block-overlay]) {
+  z-index: 1100 !important;
+}
+
+/* Same specificity as the rule above, so order decides: an open prompt is
+   waiting on the student and outranks a box that is only reporting. */
+.react-flow__node:has([data-block-overlay="prompt"]) {
+  z-index: 1200 !important;
+}
