@@ -21,6 +21,15 @@ type NodeFrameProps = {
   label?: string;
   /** Lines of text the block holds; it grows to fit them. */
   lines?: number;
+  /**
+   * Run-time bubbles that sit outside the block's outline: the input prompt and
+   * the printed-output box. Kept out of the content container below, because
+   * that container is its own stacking context and would pin them under the
+   * delete button and the diagnostic badge. They must also carry
+   * `data-block-overlay` so globals.css can lift the whole node above its
+   * neighbours — see the rule there for why a z-index here is not enough.
+   */
+  overlay?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -32,6 +41,7 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
   diagnosticMsg: propDiagnosticMsg,
   label,
   lines = 1,
+  overlay,
   children,
 }) => {
   const { width, height } = getShapeGeometry(kind, lines);
@@ -119,6 +129,10 @@ export const NodeFrame: React.FC<NodeFrameProps> = ({
       <div className="relative z-10 flex h-full w-full items-center justify-center p-3 text-center text-xs font-medium">
         {children}
       </div>
+
+      {/* Overlays last and un-nested, so they stack above every other part of
+          the block and position against the frame itself. */}
+      {overlay}
     </div>
   );
 };
